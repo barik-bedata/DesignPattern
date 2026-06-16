@@ -1,10 +1,63 @@
-# Builder Design Pattern
+# বিল্ডার ডিজাইন প্যাটার্ন (Builder Design Pattern)
 
-## 📖 Overview
-Lets you construct complex objects step by step. The pattern allows you to produce different types and representations of an object using the same construction code.
+## 📖 বিল্ডার প্যাটার্ন কী?
+**বিল্ডার (Builder)** হলো একটি ক্রিয়েশনাল ডিজাইন প্যাটার্ন, যার সাহায্যে একটি জটিল (Complex) অবজেক্টকে **ধাপে ধাপে (step-by-step)** তৈরি করা যায়। 
+এটি একই গঠন-প্রক্রিয়া (Construction Process) ব্যবহার করে বিভিন্ন ধরনের বা বিভিন্ন কনফিগারেশনের অবজেক্ট তৈরি করতে সাহায্য করে।
 
-## 🤔 When to use it?
-*(Add specific use cases here when you study this pattern)*
+---
 
-## 💻 Example
-*(Code examples will go here)*
+## ⚠️ সমস্যা (কেন এটি দরকার?)
+ধরা যাক, আপনি একটি কাস্টম পিসি (Computer) বানাতে চান। একটি পিসিতে অনেক পার্টস থাকতে পারে— প্রসেসর, র‍্যাম, স্টোরেজ, গ্রাফিক্স কার্ড, লিকুইড কুলিং ইত্যাদি।
+
+আপনি যদি সাধারণ কন্সট্রাক্টর দিয়ে এটি বানাতে যান, তবে কোডটি এরকম ভয়াবহ (Telescoping Constructor Anti-Pattern) রূপ নেবে:
+```csharp
+var gamingPc = new Computer("Intel i9", 32, 2048, "RTX 4090", true);
+var officePc = new Computer("Intel i3", 8, 256, null, false);
+```
+
+**সমস্যাগুলো:**
+১. **প্যারামিটার কনফিউশন:** কোন প্যারামিটারটি কীসের, তা বোঝা খুবই কঠিন। পর পর দুটি `int` বা `bool` থাকলে ভুল ভ্যালু পাস হওয়ার সম্ভাবনা ১০০%। 
+২. **অপ্রয়োজনীয় Data:** অফিস পিসিতে গ্রাফিক্স কার্ড বা কুলিং লাগে না, তবুও কন্সট্রাক্টরের শর্ত মেলাতে সেখানে বাধ্য হয়ে `null` বা `false` পাঠাতে হচ্ছে, যা কোডকে অপরিষ্কার করে তোলে।
+
+---
+
+## 💡 সমাধান
+আমরা অবজেক্ট তৈরির দায়িত্ব একটি **Builder** ক্লাসের কাছে দিয়ে দেব এবং অবজেক্টটি ধাপে ধাপে (Method Chaining বা Fluent API ব্যবহার করে) তৈরি করবো।
+
+```csharp
+var officePc = builder
+                .SetProcessor("Intel i5")
+                .SetRAM(16)
+                .SetStorage(512)
+                .Build();
+```
+
+**সুবিধা:**
+১. **Readability:** কোড পড়ার সময় স্পষ্টভাবে বোঝা যাচ্ছে কোন ধাপে কী যুক্ত করা হচ্ছে।
+২. **Flexibility:** যে পার্টসগুলো (যেমন- গ্রাফিক্স কার্ড) দরকার নেই, সেগুলোর মেথড আমরা কলই করবো না! কোনো `null` বা `false` পাস করার ঝামেলা নেই।
+
+---
+
+## 🧱 প্রধান কম্পোনেন্টগুলো (Computer Build এর আলোকে)
+
+১. **Product (`Computer`):** 
+যে জটিল অবজেক্টটি আমরা তৈরি করতে চাই।
+
+২. **Builder Interface (`IComputerBuilder`):** 
+প্রোডাক্টটি তৈরি করার বিভিন্ন ধাপের (Steps) ডিক্লারেশন। যেমন: `SetRAM()`, `SetStorage()` ইত্যাদি।
+
+৩. **Concrete Builder (`CustomComputerBuilder`):** 
+আসল বিল্ডার, যে Builder Interface-এর ধাপগুলো ইমপ্লিমেন্ট করে ধাপে ধাপে পিসিটি জোড়া লাগায়। 
+
+৪. **Director (`ComputerDirector` - ঐচ্ছিক):** 
+যদি আমাদের আগে থেকেই ফিক্সড কিছু কনফিগারেশন জানা থাকে (যেমন- High-End Gaming PC-তে কী কী থাকবে তা আগে থেকেই ফিক্সড), তখন ডিরেক্টর ক্লাসটি বিল্ডারকে বলে দেয় ঠিক কোন কোন ধাপে কাজ করতে হবে।
+
+৫. **Client (`SolutionRunner`):** 
+ক্লায়েন্ট সাধারণত বিল্ডার তৈরি করে, প্রয়োজন হলে ডিরেক্টরকে দেয় এবং সবশেষে `Build()` মেথড কল করে ফাইনাল প্রোডাক্টটি হাতে পায়।
+
+---
+
+## 💻 আমাদের কোড উদাহরণ
+* [`example1-computer-builder.cs`](example1-computer-builder.cs): এই ফাইলে আমরা "Telescoping Constructor" এর সমস্যা (Violation) এবং "Builder Pattern" দিয়ে তার সমাধান (Solution) একদম আলাদা দুটি ব্লকে প্র্যাক্টিক্যালি দেখিয়েছি।
+* [`example2-send-money-violation.cs`](example2-send-money-violation.cs): বিকাশ/নগদের সেন্ড মানির ক্ষেত্রে সাধারণ কন্সট্রাক্টর ব্যবহার করলে কীভাবে কোড নোংরা হয়ে যায় (ভায়োলেশন), তার ফুল কোড।
+* [`example3-send-money-solution.cs`](example3-send-money-solution.cs): সেই একই সেন্ড মানি রিকোয়েস্টকে Builder Pattern ব্যবহার করে কীভাবে একদম ক্লিন এবং ফ্লেক্সিবল করা যায় (সলিউশন), তার ফুল কোড।

@@ -23,7 +23,7 @@ bossClone.Weapon = new Weapon(boss.Weapon.Name); // ম্যানুয়াল 
 
 **সমস্যাগুলো:**
 ১. **Tedious (বিরক্তিকর):** অবজেক্টে যদি ৫০টি প্রপার্টি থাকে, তবে ম্যানুয়ালি ৫০ লাইন ধরে ধরে কপি করতে হবে।
-২. **Private Fields:** অবজেক্টের ভেতরে যদি কোনো `private` ফিল্ড থাকে, তবে আপনি বাহির থেকে কখনোই তা ম্যানুয়ালি কপি করতে পারবেনলগ্ন না!
+২. **Private Fields:** অবজেক্টের ভেতরে যদি কোনো `private` ফিল্ড থাকে, তবে আপনি বাহির থেকে কখনোই তা ম্যানুয়ালি কপি করতে পারবেন না!
 
 ---
 
@@ -56,3 +56,8 @@ C# এর `MemberwiseClone()` মেথড শ্যালো কপি কর�
 
 ## 💻 আমাদের কোড উদাহরণ
 * [`example1-game-character-prototype.cs`](example1-game-character-prototype.cs): এই ফাইলে আমরা গেমিং এনিমি (Enemy) তৈরি করার ক্ষেত্রে ম্যানুয়ালি কপি করার সমস্যা দেখিয়েছি। এরপর সলিউশনে Prototype প্যাটার্ন ব্যবহার করে **Shallow Copy** এবং **Deep Copy** এর চাক্ষুষ প্রমাণ এবং পার্থক্য দেখিয়েছি।
+* [`example2-wedding-card-prototype.cs`](example2-wedding-card-prototype.cs): বিয়ের কার্ড ছাপানোর উদাহরণ। ৫০০ জন মেহমানের জন্য বারবার ডিজাইন না করে একবার মাস্টার কপি বানিয়ে ফটোকপি (Clone) করার চমৎকার রিয়েল-লাইফ এক্সাম্পল।
+* [`example3-nid-card-prototype.cs`](example3-nid-card-prototype.cs): জাতীয় পরিচয়পত্র (NID) প্রিন্ট করার সময় বারবার সিকিউরিটি হলোগ্রাম ও সিল লোড না করে ব্লাংক কপিকে ক্লোন করার এক্সাম্পল।
+* [`example4-cv-template-prototype.cs`](example4-cv-template-prototype.cs): বিভিন্ন কোম্পানিতে চাকরির অ্যাপ্লিকেশনের জন্য প্রতিবার নতুন করে CV না লিখে, একটি মাস্টার CV-কে ক্লোন করে শুধু Objective চেঞ্জ করার এক্সাম্পল।
+* [`example5-restaurant-invoice-prototype.cs`](example5-restaurant-invoice-prototype.cs): রেস্টুরেন্টে প্রতিটি বিল প্রিন্ট করার সময় বারবার লোগো ও ঠিকানা ডেটাবেস থেকে লোড না করে, মাস্টার ইনভয়েস ক্লোন করে কাস্টমারের নাম বসানোর এক্সাম্পল।
+* [`example6-real-estate-house-prototype.cs`](example6-real-estate-house-prototype.cs): রিয়েল এস্টেট প্রোজেক্টে (যেমন বসুন্ধরা) একই ডিজাইনের ১০০টি বাড়ি বানানোর জন্য বারবার আর্কিটেকচার ডিজাইন না করে ব্লু-প্রিন্ট ক্লোন করার এক্সাম্পল।

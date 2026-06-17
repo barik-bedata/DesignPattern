@@ -62,6 +62,12 @@ C# এর `MemberwiseClone()` মেথড শ্যালো কপি কর�
 * [`example5-restaurant-invoice-prototype.cs`](example5-restaurant-invoice-prototype.cs): রেস্টুরেন্টে প্রতিটি বিল প্রিন্ট করার সময় বারবার লোগো ও ঠিকানা ডেটাবেস থেকে লোড না করে, মাস্টার ইনভয়েস ক্লোন করে কাস্টমারের নাম বসানোর এক্সাম্পল।
 * [`example6-real-estate-house-prototype.cs`](example6-real-estate-house-prototype.cs): রিয়েল এস্টেট প্রোজেক্টে (যেমন বসুন্ধরা) একই ডিজাইনের ১০০টি বাড়ি বানানোর জন্য বারবার আর্কিটেকচার ডিজাইন না করে ব্লু-প্রিন্ট ক্লোন করার এক্সাম্পল।
 * [`example7-biyecard-deep-copy-explanation.cs`](example7-biyecard-deep-copy-explanation.cs): বিয়ের কার্ডের একটি বিশেষ উদাহরণ যেখানে লাইন-বাই-লাইন কমেন্ট করে বোঝানো হয়েছে `= (Assignment)` দিয়ে কপি করলে কী বাগ হয়, এবং Nested Object (যেমন Venue) এর ক্ষেত্রে **Deep Copy** কীভাবে কাজ করে।
+* [`example8-components-of-prototype.cs`](example8-components-of-prototype.cs): প্রোটোটাইপ প্যাটার্নের ৪টি মূল কম্পোনেন্ট (Interface, Concrete, Client, Main) ব্যবহার করে তৈরি করা একটি ক্লাসিক উদাহরণ।
+
+---
+
+## 🧩 মূল কম্পোনেন্ট (Components)
+প্রোটোটাইপ প্যাটার্ন মূলত কোন ৪টি অংশ নিয়ে কাজ করে এবং ক্লায়েন্টের (Client) ভূমিকা কী, তা বিস্তারিত জানতে পড়ুন: 👉 **[COMPONENTS.md](COMPONENTS.md)**
 
 ---
 

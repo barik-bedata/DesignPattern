@@ -63,6 +63,7 @@ C# এর `MemberwiseClone()` মেথড শ্যালো কপি কর�
 * [`example6-real-estate-house-prototype.cs`](example6-real-estate-house-prototype.cs): রিয়েল এস্টেট প্রোজেক্টে (যেমন বসুন্ধরা) একই ডিজাইনের ১০০টি বাড়ি বানানোর জন্য বারবার আর্কিটেকচার ডিজাইন না করে ব্লু-প্রিন্ট ক্লোন করার এক্সাম্পল।
 * [`example7-biyecard-deep-copy-explanation.cs`](example7-biyecard-deep-copy-explanation.cs): বিয়ের কার্ডের একটি বিশেষ উদাহরণ যেখানে লাইন-বাই-লাইন কমেন্ট করে বোঝানো হয়েছে `= (Assignment)` দিয়ে কপি করলে কী বাগ হয়, এবং Nested Object (যেমন Venue) এর ক্ষেত্রে **Deep Copy** কীভাবে কাজ করে।
 * [`example8-components-of-prototype.cs`](example8-components-of-prototype.cs): প্রোটোটাইপ প্যাটার্নের ৪টি মূল কম্পোনেন্ট (Interface, Concrete, Client, Main) ব্যবহার করে তৈরি করা একটি ক্লাসিক উদাহরণ।
+* [`example9-DBConnection.cs`](example9-DBConnection.cs): **রিয়েল-ওয়ার্ল্ড উদাহরণ** যেখানে ডেটাবেস কানেকশন ক্লোন করার সময় প্রাইভেট ফিল্ড (connection string) বাহির থেকে পরিবর্তন করা হয়েছে। বিস্তারিত পড়ুন 👉 **[DbConnection.md](DbConnection.md)** ফাইলে।
 
 ---
 

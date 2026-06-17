@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace FlyweightPattern.PUBGGame
 {
     // ==========================================
-    // 1. Flyweight Interface
+    // 1. Flyweight Interface (DIP)
     // ==========================================
     // এটি সেই ইন্টারফেস যার মাধ্যমে ফ্লাইওয়েটগুলো বাহিরের (Extrinsic) ডেটা রিসিভ করে।
     public interface ITreeFlyweight
@@ -15,12 +15,11 @@ namespace FlyweightPattern.PUBGGame
     // ==========================================
     // 2. Concrete Flyweight (Shared Object - Intrinsic State)
     // ==========================================
-    // এই ক্লাসটিতে শুধু কমন এবং ভারী ডেটা থাকবে। এটি একবারই তৈরি হবে।
     public class TreeType : ITreeFlyweight
     {
         public string Name { get; private set; }
         public string Color { get; private set; }
-        public string TextureData { get; private set; } // বিশাল 3D মডেল ডেটা (Heavy!)
+        public string TextureData { get; private set; } 
 
         public TreeType(string name, string color, string textureData)
         {
@@ -30,7 +29,6 @@ namespace FlyweightPattern.PUBGGame
             Console.WriteLine($"\n[Factory] Created new HEAVY TreeType in Memory: {Name} ({Color}) - {TextureData}");
         }
 
-        // Extrinsic State (X, Y) মেথডের প্যারামিটার দিয়ে পাস করা হচ্ছে
         public void Draw(int x, int y)
         {
             Console.WriteLine($"Rendering a {Name} tree at ({x}, {y}) using shared 10MB texture.");
@@ -38,9 +36,8 @@ namespace FlyweightPattern.PUBGGame
     }
 
     // ==========================================
-    // 3. Unshared Concrete Flyweight (ঐচ্ছিক)
+    // 3. Unshared Concrete Flyweight (Optional)
     // ==========================================
-    // সব ফ্লাইওয়েট যে শেয়ার্ড হতে হবে এমন কোনো কথা নেই। কোনো স্পেশাল ট্রি থাকলে সেটা শেয়ার্ড হবে না।
     public class SpecialBossTree : ITreeFlyweight
     {
         public void Draw(int x, int y)
@@ -51,16 +48,22 @@ namespace FlyweightPattern.PUBGGame
 
 
     // ==========================================
-    // 4. Flyweight Factory (ম্যানেজার)
+    // 4. Flyweight Factory & Interface
     // ==========================================
-    // এর কাজ হলো ডুপ্লিকেট ConcreteFlyweight তৈরি হওয়া আটকানো (Caching)
-    public class TreeFactory
+    // ফ্যাক্টরির জন্যও ইন্টারফেস (DIP)
+    public interface ITreeFactory
     {
-        private static Dictionary<string, ITreeFlyweight> _flyweights = new Dictionary<string, ITreeFlyweight>();
+        ITreeFlyweight GetTreeType(string name, string color, string texture);
+        void PrintMemoryStats();
+    }
 
-        public static ITreeFlyweight GetTreeType(string name, string color, string texture)
+    public class TreeFactory : ITreeFactory
+    {
+        // Static ফিল্ড সরিয়ে Instance ফিল্ড ব্যবহার করছি যেন টেস্টেবিলিটি বাড়ে
+        private Dictionary<string, ITreeFlyweight> _flyweights = new Dictionary<string, ITreeFlyweight>();
+
+        public ITreeFlyweight GetTreeType(string name, string color, string texture)
         {
-            // যদি এই নামের গাছ মেমোরিতে অলরেডি থাকে, তবে পুরোনোটিই রিটার্ন করো (RAM বাঁচাও!)
             if (!_flyweights.ContainsKey(name))
             {
                 _flyweights[name] = new TreeType(name, color, texture);
@@ -68,7 +71,7 @@ namespace FlyweightPattern.PUBGGame
             return _flyweights[name];
         }
 
-        public static void PrintMemoryStats()
+        public void PrintMemoryStats()
         {
             Console.WriteLine($"\n[Memory Stats] Total unique Shared Flyweights in Memory: {_flyweights.Count}");
         }
@@ -76,15 +79,18 @@ namespace FlyweightPattern.PUBGGame
 
 
     // ==========================================
-    // 5. Client (Context) Object
+    // 5. Context / Client Object & Interface
     // ==========================================
-    // এই ক্লাসে শুধু ইউনিক ডেটা (X, Y) থাকবে। এটি খুবই হালকা ওজনের (Lightweight)।
-    public class Tree
+    // Tree ক্লাসের জন্যও ইন্টারফেস (DIP)
+    public interface IGameObject
+    {
+        void Draw();
+    }
+
+    public class Tree : IGameObject
     {
         private int _x;
         private int _y;
-        
-        // DIP মেনে ইন্টারফেসের রেফারেন্স ধরে রাখছি, কোনো কংক্রিট ক্লাসের নয়!
         private ITreeFlyweight _flyweightType; 
 
         public Tree(int x, int y, ITreeFlyweight flyweightType)
@@ -96,34 +102,44 @@ namespace FlyweightPattern.PUBGGame
 
         public void Draw()
         {
-            // ড্র করার সময় নিজের X, Y ফ্লাইওয়েটের কাছে পাস করে দিচ্ছি
             _flyweightType.Draw(_x, _y);
         }
     }
 
 
     // ==========================================
-    // 6. Forest (কোটি কোটি গাছ রাখার জায়গা)
+    // 6. Map / Forest (The high-level manager)
     // ==========================================
-    public class Forest
+    // Forest ক্লাসের জন্যও ইন্টারফেস (DIP)
+    public interface IMap
     {
-        private List<Tree> _trees = new List<Tree>();
+        void PlantTree(int x, int y, string name, string color, string texture);
+        void PlantSpecialTree(int x, int y);
+        void RenderMap();
+    }
+
+    public class Forest : IMap
+    {
+        private List<IGameObject> _trees = new List<IGameObject>();
+        private ITreeFactory _factory; // Dependency Injection
+
+        // Constructor Injection for Factory!
+        public Forest(ITreeFactory factory)
+        {
+            _factory = factory;
+        }
 
         public void PlantTree(int x, int y, string name, string color, string texture)
         {
-            // ১. ফ্যাক্টরি থেকে কমন ফ্লাইওয়েট নিয়ে আসো (ইন্টারফেস রিটার্ন করবে)
-            ITreeFlyweight type = TreeFactory.GetTreeType(name, color, texture);
-            
-            // ২. একদম হালকা ওজনের একটি Tree অবজেক্ট বানাও
-            Tree tree = new Tree(x, y, type);
+            ITreeFlyweight type = _factory.GetTreeType(name, color, texture);
+            IGameObject tree = new Tree(x, y, type);
             _trees.Add(tree);
         }
 
         public void PlantSpecialTree(int x, int y)
         {
-            // Unshared ফ্লাইওয়েট সরাসরি 'new' করে বানাচ্ছি, কারণ এটা শেয়ার হবে না।
             ITreeFlyweight specialType = new SpecialBossTree();
-            Tree tree = new Tree(x, y, specialType);
+            IGameObject tree = new Tree(x, y, specialType);
             _trees.Add(tree);
         }
 
@@ -145,30 +161,29 @@ namespace FlyweightPattern.PUBGGame
     {
         static void Run()
         {
-            Console.WriteLine("=== Flyweight Design Pattern (PUBG Map Rendering) ===\n");
+            Console.WriteLine("=== Flyweight Design Pattern (With 100% DIP) ===\n");
 
-            Forest erangelMap = new Forest();
+            // Client এখন কোনো কংক্রিট ক্লাসের ওপর নির্ভর করছে না। 
+            // সবকিছুই ইন্টারফেসের মাধ্যমে হচ্ছে!
+            ITreeFactory factory = new TreeFactory();
+            IMap erangelMap = new Forest(factory);
 
-            // আমরা ম্যাপে গাছ বসাচ্ছি
-            // প্রথমবার যখন Oak বানাবো, তখন 10 MB এর ভারী অবজেক্ট তৈরি হবে।
+            // ম্যাপে গাছ বসাচ্ছি
             erangelMap.PlantTree(10, 20, "Oak", "Green", "10MB_Oak_Texture.png");
-            
-            // এরপর যতবার Oak বানাবো, আগেরটাই শেয়ার হবে! নতুন করে মেমোরি খাবে না।
             erangelMap.PlantTree(15, 30, "Oak", "Green", "10MB_Oak_Texture.png");
             erangelMap.PlantTree(50, 60, "Oak", "Green", "10MB_Oak_Texture.png");
 
-            // নতুন Pine গাছ, তাই এটি আবার একবার ভারী অবজেক্ট তৈরি করবে।
             erangelMap.PlantTree(100, 200, "Pine", "Dark Green", "8MB_Pine_Texture.png");
             erangelMap.PlantTree(110, 210, "Pine", "Dark Green", "8MB_Pine_Texture.png");
 
-            // Unshared Flyweight (যেটি শেয়ার হবে না)
+            // Unshared Flyweight
             erangelMap.PlantSpecialTree(999, 999);
 
-            // ম্যাপ রেন্ডার করা হলো
+            // ম্যাপ রেন্ডার
             erangelMap.RenderMap();
 
             // মেমোরি স্ট্যাটাস চেক!
-            TreeFactory.PrintMemoryStats();
+            factory.PrintMemoryStats();
         }
     }
 }

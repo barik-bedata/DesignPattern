@@ -42,6 +42,6 @@ To create a Singleton class, you generally need to do two things:
 
 ## 💻 Examples Included
 Check out the examples in this directory:
-* [`example1.cs`](example1.cs): Basic implementation (Logger, DB Connection, Config).
-* [`example2-thread-safe.cs`](example2-thread-safe.cs): Multithreading implementation (Double-Check Locking with `volatile` and `Lazy<T>`).
-* [`example3-lazy-singleton.cs`](example3-lazy-singleton.cs): Deep dive into how `Lazy<T>` delays expensive object creation until needed.
+* [`01-SingletonNormal.cs`](01-SingletonNormal.cs): Basic implementation (Logger, DB Connection, Config).
+* [`02-MultithreadSingleton.cs`](02-MultithreadSingleton.cs): Multithreading implementation (Double-Check Locking with `volatile` and `Lazy<T>`).
+* [`03-LazySingleton.cs`](03-LazySingleton.cs): Deep dive into how `Lazy<T>` delays expensive object creation until needed.

@@ -59,4 +59,4 @@ if (brand == "bKash") {
 ---
 
 ## 💻 আমাদের কোড উদাহরণ
-* [`example1-payment-ecosystem.cs`](example1-payment-ecosystem.cs): বিকাশ এবং নগদের সম্পূর্ণ ইকোসিস্টেম (পেমেন্ট, রিসিট এবং নোটিফিকেশন) কীভাবে Abstract Factory দিয়ে সামলানো যায় তার একটি দুর্দান্ত রিয়েল-লাইফ উদাহরণ।
+* [`PaymentEcosystem.cs`](PaymentEcosystem.cs): বিকাশ এবং নগদের সম্পূর্ণ ইকোসিস্টেম (পেমেন্ট, রিসিট এবং নোটিফিকেশন) কীভাবে Abstract Factory দিয়ে সামলানো যায় তার একটি দুর্দান্ত রিয়েল-লাইফ উদাহরণ।

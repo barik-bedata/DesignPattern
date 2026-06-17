@@ -31,9 +31,9 @@ namespace AbstractFactoryPattern.Violation
     // ----- Nagad Family -----
     public class NagadPayment : IPayment 
     { 
-        public void Process(decimal amount) 
+        public void Process(decimal amount)
         {
-            Console.WriteLine($"[ন নগদ] {amount} টাকা কাটা হলো"); 
+            Console.WriteLine($"[ন নগদ] {amount} টাকা কাটা হলো");
         }
     }
 

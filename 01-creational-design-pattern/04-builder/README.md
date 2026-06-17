@@ -69,3 +69,4 @@ var officePc = builder
 * [`example2-send-money-violation.cs`](example2-send-money-violation.cs): বিকাশ/নগদের সেন্ড মানির ক্ষেত্রে সাধারণ কন্সট্রাক্টর ব্যবহার করলে কীভাবে কোড নোংরা হয়ে যায় (ভায়োলেশন), তার ফুল কোড।
 * [`example3-send-money-solution.cs`](example3-send-money-solution.cs): সেই একই সেন্ড মানি রিকোয়েস্টকে Builder Pattern ব্যবহার করে কীভাবে একদম ক্লিন এবং ফ্লেক্সিবল করা যায় (সলিউশন), তার ফুল কোড।
 * [`example4-burger-builder.cs`](example4-burger-builder.cs): এখানে **Inner Builder Class Pattern** ব্যবহার করে বার্গার তৈরির উদাহরণ দেওয়া হয়েছে। অরিজিনাল ক্লাসের কন্সট্রাক্টর `private` করে দিয়ে ক্লাসের ভেতরেই Builder রাখায় `Burger.Builder` ছাড়া অন্য কোনোভাবেই অবজেক্ট বানানো সম্ভব না! এটি জাভা এবং সি-শার্পে অত্যন্ত জনপ্রিয় একটি বিল্ডার আর্কিটেকচার।
+* [`QueryBuilder.cs`](QueryBuilder.cs): SQL Query Builder এর রিয়েল-লাইফ উদাহরণ, যেখানে ORM-এর মতো Fluent Interface ব্যবহার করে নিরাপদে SQL কুয়েরি জেনারেট করার টেকনিক দেখানো হয়েছে।

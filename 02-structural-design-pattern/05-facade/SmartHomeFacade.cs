@@ -3,30 +3,61 @@ using System;
 namespace FacadePatternExample
 {
     // ==========================================
-    // 1. Complex Subsystems (যে ক্লাসগুলোর অনেক লজিক থাকে)
+    // 1. Interfaces for Subsystems (DIP মানার জন্য!)
     // ==========================================
 
-    public class TV
+    public interface ITV
     {
-        public void TurnOn() => Console.WriteLine("TV is turned ON.");
-        public void TurnOff() => Console.WriteLine("TV is turned OFF.");
+        void TurnOn();
+        void TurnOff();
     }
 
-    public class SoundSystem
+    public interface ISoundSystem
     {
-        public void TurnOn() => Console.WriteLine("Sound System is turned ON.");
+        void TurnOn();
+        void SetVolume(int level);
+        void TurnOff();
+    }
+
+    public interface IMediaPlayer
+    {
+        void TurnOn();
+        void PlayMedia(string mediaName);
+        void TurnOff();
+    }
+
+    public interface ILights
+    {
+        void Dim();
+        void TurnOn();
+    }
+
+    // ==========================================
+    // 2. Concrete Subsystems (যে ক্লাসগুলোর অনেক লজিক থাকে)
+    // ==========================================
+
+    public class SmartTV : ITV
+    {
+        public void TurnOn() => Console.WriteLine("Smart TV is turned ON.");
+        public void TurnOff() => Console.WriteLine("Smart TV is turned OFF.");
+    }
+
+    public class SurroundSoundSystem : ISoundSystem
+    {
+        public void TurnOn() => Console.WriteLine("Surround Sound System is turned ON.");
         public void SetVolume(int level) => Console.WriteLine($"Sound volume set to {level}.");
-        public void TurnOff() => Console.WriteLine("Sound System is turned OFF.");
+        public void TurnOff() => Console.WriteLine("Surround Sound System is turned OFF.");
     }
 
-    public class DVDPlayer
+    // আগে DVDPlayer ছিল, এখন আমরা Netflix ব্যবহার করছি। ইন্টারফেস থাকায় Facade এ কোনো চেঞ্জ লাগবে না!
+    public class NetflixStreamingService : IMediaPlayer
     {
-        public void TurnOn() => Console.WriteLine("DVD Player is turned ON.");
-        public void PlayMovie(string movie) => Console.WriteLine($"Playing movie: '{movie}'...");
-        public void TurnOff() => Console.WriteLine("DVD Player is turned OFF.");
+        public void TurnOn() => Console.WriteLine("Netflix App is launched.");
+        public void PlayMedia(string mediaName) => Console.WriteLine($"Streaming movie: '{mediaName}'...");
+        public void TurnOff() => Console.WriteLine("Netflix App is closed.");
     }
 
-    public class RoomLights
+    public class SmartRoomLights : ILights
     {
         public void Dim() => Console.WriteLine("Room lights are dimmed for the movie.");
         public void TurnOn() => Console.WriteLine("Room lights are back to normal.");
@@ -34,25 +65,26 @@ namespace FacadePatternExample
 
 
     // ==========================================
-    // 2. The Facade (ক্লায়েন্টের জন্য সহজ একটি ইন্টারফেস বা কন্ট্রোলার)
+    // 3. The Facade (DIP Followed - ১০০% Loosely Coupled)
     // ==========================================
 
     public class SmartHomeFacade
     {
-        private TV _tv;
-        private SoundSystem _soundSystem;
-        private DVDPlayer _dvdPlayer;
-        private RoomLights _lights;
+        // কংক্রিট ক্লাসের ওপর নির্ভর না করে ইন্টারফেসের (Abstraction) ওপর নির্ভর করা হচ্ছে! (DIP)
+        private readonly ITV _tv;
+        private readonly ISoundSystem _soundSystem;
+        private readonly IMediaPlayer _mediaPlayer;
+        private readonly ILights _lights;
 
-        public SmartHomeFacade(TV tv, SoundSystem soundSystem, DVDPlayer dvdPlayer, RoomLights lights)
+        public SmartHomeFacade(ITV tv, ISoundSystem soundSystem, IMediaPlayer mediaPlayer, ILights lights)
         {
             _tv = tv;
             _soundSystem = soundSystem;
-            _dvdPlayer = dvdPlayer;
+            _mediaPlayer = mediaPlayer;
             _lights = lights;
         }
 
-        // ক্লায়েন্টের জন্য একদম সিম্পল একটি মেথড! সে ভেতরের জটিলতা কিছুই জানবে না।
+        // ক্লায়েন্টের জন্য একদম সিম্পল একটি মেথড!
         public void WatchMovie(string movieName)
         {
             Console.WriteLine("\n[Facade] Get ready to watch a movie! Initializing system...");
@@ -60,16 +92,15 @@ namespace FacadePatternExample
             _tv.TurnOn();
             _soundSystem.TurnOn();
             _soundSystem.SetVolume(50);
-            _dvdPlayer.TurnOn();
-            _dvdPlayer.PlayMovie(movieName);
+            _mediaPlayer.TurnOn();
+            _mediaPlayer.PlayMedia(movieName);
             Console.WriteLine("[Facade] Enjoy the movie!\n");
         }
 
-        // মুভি দেখা শেষ হলে সিস্টেম বন্ধ করার জন্য আরেকটি সিম্পল মেথড
         public void EndMovie()
         {
             Console.WriteLine("\n[Facade] Shutting down the home theater system...");
-            _dvdPlayer.TurnOff();
+            _mediaPlayer.TurnOff();
             _soundSystem.TurnOff();
             _tv.TurnOff();
             _lights.TurnOn();
@@ -79,26 +110,25 @@ namespace FacadePatternExample
 
 
     // ==========================================
-    // 3. Client Code
+    // 4. Client Code
     // ==========================================
     
     class Program
     {
         static void Main()
         {
-            Console.WriteLine("=== Facade Design Pattern ===\n");
+            Console.WriteLine("=== Facade Design Pattern (With Dependency Inversion Principle) ===\n");
 
             // সাব-সিস্টেমগুলো তৈরি করা হচ্ছে
-            TV myTv = new TV();
-            SoundSystem mySound = new SoundSystem();
-            DVDPlayer myDvd = new DVDPlayer();
-            RoomLights myLights = new RoomLights();
+            ITV myTv = new SmartTV();
+            ISoundSystem mySound = new SurroundSoundSystem();
+            IMediaPlayer myPlayer = new NetflixStreamingService(); // আমরা চাইলে কালকে DVDPlayer ও দিতে পারি!
+            ILights myLights = new SmartRoomLights();
 
-            // Facade তৈরি করে সাব-সিস্টেমগুলো ভেতরে দিয়ে দিচ্ছি
-            SmartHomeFacade smartRemote = new SmartHomeFacade(myTv, mySound, myDvd, myLights);
+            // Facade তৈরি করে ইন্টারফেসগুলো ইনজেক্ট করছি (Dependency Injection)
+            SmartHomeFacade smartRemote = new SmartHomeFacade(myTv, mySound, myPlayer, myLights);
 
-            // Client এর জীবন কত সহজ দেখুন! তাকে আলাদা করে ৪টা গ্যাজেট অন করতে হচ্ছে না। 
-            // সে জাস্ট Facade কে একটা ইনস্ট্রাকশন দিচ্ছে।
+            // Client এর জীবন কত সহজ দেখুন!
             smartRemote.WatchMovie("Inception");
 
             // মুভি দেখা শেষ!

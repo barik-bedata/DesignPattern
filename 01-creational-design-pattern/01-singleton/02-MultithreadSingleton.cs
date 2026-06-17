@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace SingletonPattern.Multithread
 {
     // ==============================================================
-    // Method 1: Double-Check Locking (লগার এর উদাহরণ)
+    // Example 1: Logger (লগার) - Double-Check Locking
     // ==============================================================
     namespace LoggerExample
     {
@@ -63,7 +63,7 @@ namespace SingletonPattern.Multithread
 
 
     // ==============================================================
-    // Method 2: Using Lazy<T> (ফুল ডেটাবেস এর উদাহরণ - Modern & Best Way)
+    // Example 2: Database Connection Pool - Double-Check Locking
     // ==============================================================
     namespace DatabaseExample
     {
@@ -73,28 +73,39 @@ namespace SingletonPattern.Multithread
             void ExecuteQuery(int threadId, string query);
         }
 
-        // 🔹 মডার্ন ডেটাবেস ক্লাস যা IDatabaseConnectionPool ইমপ্লিমেন্ট করে
-        public class ModernDatabasePool : IDatabaseConnectionPool
+        // 🔹 থ্রেড-সেফ ডেটাবেস ক্লাস যা IDatabaseConnectionPool ইমপ্লিমেন্ট করে
+        public class ThreadSafeDatabasePool : IDatabaseConnectionPool
         {
-            // Lazy<T> শুধু দরকারের সময়ই অবজেক্ট বানাবে এবং মাল্টিথ্রেডিংয়েও একটাই বানাবে।
-            private static readonly Lazy<ModernDatabasePool> _lazyInstance = 
-                new Lazy<ModernDatabasePool>(() => new ModernDatabasePool());
+            // volatile: ভ্যালু সরাসরি Main Memory (RAM) থেকে পড়া হবে।
+            private static volatile ThreadSafeDatabasePool _instance;
+            
+            // লক করার জন্য অবজেক্ট
+            private static readonly object _lock = new object();
 
             public string ConnectionString { get; private set; }
 
             // ১. Private Constructor
-            private ModernDatabasePool()
+            private ThreadSafeDatabasePool()
             {
-                Console.WriteLine(">> [ModernDatabasePool] ডেটাবেস কানেকশন তৈরি হলো! (Lazy<T> Magic)");
+                Console.WriteLine(">> [ThreadSafeDatabasePool] ডেটাবেস কানেকশন তৈরি হলো! (Double-Check Locking)");
                 Thread.Sleep(200); // ডেটাবেস কানেক্ট হতে সময় লাগে
-                ConnectionString = "Server=ModernSQL; Database=AppDB;";
+                ConnectionString = "Server=ThreadSafeSQL; Database=AppDB;";
             }
 
             // ২. Public Static Method
-            public static ModernDatabasePool GetInstance()
+            public static ThreadSafeDatabasePool GetInstance()
             {
-                // .Value ডাকলেই সে অবজেক্ট বানায় (যদি আগে থেকে না থাকে) বা আগেরটা ফেরত দেয়।
-                return _lazyInstance.Value;
+                if (_instance == null)
+                {
+                    lock (_lock)
+                    {
+                        if (_instance == null)
+                        {
+                            _instance = new ThreadSafeDatabasePool();
+                        }
+                    }
+                }
+                return _instance;
             }
 
             public void ExecuteQuery(int threadId, string query)
@@ -122,11 +133,11 @@ namespace SingletonPattern.Multithread
                 
                 // ১. লগার টেস্ট (ইন্টারফেস ব্যবহার করে)
                 LoggerExample.ILogger logger = LoggerExample.ThreadSafeLogger.GetInstance();
-                // logger.Log($"User {i} action logged."); // কনসোল ভিড় কমানোর জন্য অফ রাখা হয়েছে
+                // logger.Log($"User {i} action logged."); 
                 
-                // ২. ডেটাবেস টেস্ট (ইন্টারফেস ব্যবহার করে)
-                DatabaseExample.IDatabaseConnectionPool db = DatabaseExample.ModernDatabasePool.GetInstance();
-                // db.ExecuteQuery(i, "SELECT * FROM Users"); // কনসোল ভিড় কমানোর জন্য অফ রাখা হয়েছে
+                // ২. ডেটাবেস টেস্ট (ইন্টারফেস ব্যবহার করে, Double-Check Locking এর মাধ্যমে)
+                DatabaseExample.IDatabaseConnectionPool db = DatabaseExample.ThreadSafeDatabasePool.GetInstance();
+                // db.ExecuteQuery(i, "SELECT * FROM Users"); 
             });
 
             Console.WriteLine("\n[Success] ২০টা থ্রেড রান করার পরও দেখুন, অবজেক্টগুলো মাত্র একবারই তৈরি হয়েছে!");

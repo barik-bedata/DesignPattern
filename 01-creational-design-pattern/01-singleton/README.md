@@ -51,5 +51,5 @@
 এই ফোল্ডারের ভেতরে থাকা উদাহরণগুলোতে চোখ বুলিয়ে নিন:
 
 * [`01-SingletonNormal.cs`](01-SingletonNormal.cs): সিঙ্গেল-থ্রেডেড বেসিক উদাহরণ। এখানে **Logger** এবং **Database Connection Pool** এর চমৎকার রিয়েল-ওয়ার্ল্ড ডেমো দেওয়া হয়েছে, যেখানে দেখা যায় কীভাবে অবজেক্ট শেয়ার হয়।
-* [`02-MultithreadSingleton.cs`](02-MultithreadSingleton.cs): মাল্টিথ্রেডেড পরিবেশের জন্য উপযুক্ত। এখানে **Double-Check Locking (with volatile)** এবং আধুনিক **`Lazy<T>`** এর মাধ্যমে ডেটাবেস ও লগার কীভাবে নিরাপদ রাখা যায় তার ফুল ওয়ার্কিং ডেমো রয়েছে।
+* [`02-MultithreadSingleton.cs`](02-MultithreadSingleton.cs): মাল্টিথ্রেডেড পরিবেশের জন্য উপযুক্ত। এখানে **Double-Check Locking (with volatile)** এর মাধ্যমে ডেটাবেস ও লগার কীভাবে নিরাপদ রাখা যায় তার ফুল ওয়ার্কিং ডেমো রয়েছে।
 * [`03-LazySingleton.cs`](03-LazySingleton.cs): `Lazy<T>` কীভাবে ভারী অবজেক্ট তৈরিকে বিলম্বিত (Defer) করে র‍্যাম বাঁচায়, তার বিস্তারিত এবং প্রমাণসহ উদাহরণ।

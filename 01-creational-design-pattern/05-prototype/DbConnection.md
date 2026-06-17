@@ -42,4 +42,4 @@ public DatabaseConnection CloneWithNewProvider(string newProvider, string newCon
 
 ## 💻 কোড দেখুন
 এই পুরো লজিকটি কোডে কীভাবে লেখা হয়েছে তা দেখতে নিচের লিংকে ক্লিক করুন:
-👉 **[example9-DBConnection.cs](example9-DBConnection.cs)**
+👉 **[DBConnection.cs](DBConnection.cs)**

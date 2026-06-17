@@ -51,4 +51,4 @@ public Smartphone DeepClone()
 
 ## 💻 কোড উদাহরণ
 এই বাগটি কীভাবে তৈরি হয় এবং কীভাবে Deep Copy দিয়ে ফিক্স করা হয়, তার সম্পূর্ণ প্রমাণ দেখতে নিচের লিংকে ক্লিক করুন:
-👉 **[example11-DeepShallowCopy.cs](example11-DeepShallowCopy.cs)**
+👉 **[DeepShallowCopy.cs](DeepShallowCopy.cs)**

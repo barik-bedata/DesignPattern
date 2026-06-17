@@ -1,21 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
-namespace SingletonPattern
+// ==============================================================
+// 🟢 SINGLETON PATTERN: NORMAL (Single-Threaded) EXAMPLES
+// ==============================================================
+namespace SingletonPattern.Normal
 {
-    // ===== Example 1: Logger =====
+    // ==============================================================
+    // Example 1: Logger (লগার)
+    // ==============================================================
+    // কেন Singleton? পুরো অ্যাপ্লিকেশনে একটাই লগার থাকা উচিত, যাতে সব ক্লাসের লগ 
+    // একই ফাইলে বা একই লিস্টে জমা হয়। বারবার নতুন লগার বানালে লগ হারিয়ে যাবে।
     public class Logger
     {
         private static Logger _instance;
         private List<string> _logs;
 
-        // Private constructor so that it cannot be instantiated from outside
+        // ১. Private Constructor: বাইরের কেউ `new Logger()` লিখতে পারবে না।
         private Logger()
         {
             _logs = new List<string>();
-            Console.WriteLine("Logger তৈরি হলো — শুধু একবারই!");
+            Console.WriteLine(">> [Logger] সিস্টেমের প্রধান লগার তৈরি হলো! (একবারই হবে)");
         }
 
+        // ২. Public Static Method: যেখান থেকেই লগার ডাকা হোক, এই মেথডটাই কল করতে হবে।
         public static Logger GetInstance()
         {
             if (_instance == null)
@@ -25,112 +34,111 @@ namespace SingletonPattern
             return _instance;
         }
 
-        public void Log(string module, string message)
+        public void Log(string message)
         {
-            string entry = $"[{module}] {message}";
-            _logs.Add(entry);
-            Console.WriteLine(entry);
+            _logs.Add(message);
+            Console.WriteLine($"[LOG]: {message}");
         }
 
-        public List<string> GetLogs()
+        public void ShowAllLogs()
         {
-            return _logs;
+            Console.WriteLine("\n--- Stored Logs ---");
+            foreach(var log in _logs)
+            {
+                Console.WriteLine(log);
+            }
         }
     }
 
-    // ===== Example 2: Database Connection =====
-    public class DatabaseConnection
+    // ==============================================================
+    // Example 2: Database Connection Pool (ফুল ডেটাবেস এক্সাম্পল)
+    // ==============================================================
+    // কেন Singleton? ডেটাবেস কানেকশন তৈরি করা খুবই ভারী (Expensive) কাজ। 
+    // প্রতিটি ইউজার রিকোয়েস্টের জন্য নতুন কানেকশন বানালে ডেটাবেস সার্ভার ক্র্যাশ করতে পারে। 
+    // তাই একটিমাত্র கனেকশন পুল (Connection Pool) বানিয়ে সবার মাঝে শেয়ার করা হয়।
+    public class DatabaseConnectionPool
     {
-        private static DatabaseConnection _instance;
-        public string Connection { get; private set; }
+        private static DatabaseConnectionPool _instance;
+        
+        public string ConnectionString { get; private set; }
+        public bool IsConnected { get; private set; }
+        private int _queryCount = 0;
 
-        private DatabaseConnection()
+        // প্রাইভেট কনস্ট্রাক্টর
+        private DatabaseConnectionPool()
         {
-            // connection তৈরি করা expensive — শুধু একবার হোক
-            Connection = "Connected!";
-            Console.WriteLine("DB connection তৈরি হলো");
+            Console.WriteLine(">> [Database] ডেটাবেসের সাথে কানেকশন তৈরি হচ্ছে... (Taking Time)");
+            Thread.Sleep(500); // কানেকশন তৈরিতে সময় লাগছে বোঝানোর জন্য
+            
+            ConnectionString = "Server=myServer;Database=myDB;User=admin;";
+            IsConnected = true;
+            Console.WriteLine(">> [Database] কানেকশন সাকসেসফুল!");
         }
 
-        public static DatabaseConnection GetInstance()
+        public static DatabaseConnectionPool GetInstance()
         {
             if (_instance == null)
             {
-                _instance = new DatabaseConnection();
+                _instance = new DatabaseConnectionPool();
             }
             return _instance;
         }
 
-        public string Query(string sql)
+        public void ExecuteQuery(string query)
         {
-            return $"Result of: {sql}";
-        }
-    }
-
-    // ===== Example 3: App Config =====
-    public class AppConfig
-    {
-        private static AppConfig _instance;
-
-        public string Theme { get; private set; }
-        public string Language { get; private set; }
-        public string ApiKey { get; private set; }
-
-        private AppConfig()
-        {
-            // disk থেকে পড়া slow — একবারই করো
-            Theme = "dark";
-            Language = "bn";
-            ApiKey = "abc123";
-            Console.WriteLine("Config disk থেকে পড়া হলো (30ms লাগলো)");
-        }
-
-        public static AppConfig GetInstance()
-        {
-            if (_instance == null)
+            if(IsConnected)
             {
-                _instance = new AppConfig();
+                _queryCount++;
+                Console.WriteLine($"[DB Query #{_queryCount}] Executing: {query}");
             }
-            return _instance; // পরেরবার instant — 0ms!
+            else
+            {
+                Console.WriteLine("[DB Error] No Active Connection!");
+            }
         }
     }
 
+    // ==============================================================
+    // Main Method (Runner)
+    // ==============================================================
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("===== Example 1: Logger =====");
-            // PaymentModule আর CartModule একই Logger share করছে
-            var log1 = Logger.GetInstance();
-            log1.Log("PaymentModule", "Payment successful");
-
-            var log2 = Logger.GetInstance();
-            log2.Log("CartModule", "Item added");
-
-            Console.WriteLine($"Is log1 and log2 same object? {ReferenceEquals(log1, log2)}"); // true — একই object!
+            Console.WriteLine("===== 1. LOGGER SINGLETON TEST =====");
             
-            Console.WriteLine("All Logs:");
-            foreach(var log in log1.GetLogs()) 
-            {
-                Console.WriteLine($" - {log}");
-            }
+            // Payment মডিউল লগার ডাকলো
+            var paymentLogger = Logger.GetInstance();
+            paymentLogger.Log("Payment of 500 TK Successful.");
+
+            // Cart মডিউল লগার ডাকলো
+            var cartLogger = Logger.GetInstance();
+            cartLogger.Log("Item 'Shirt' added to cart.");
+
+            // চেক করা হচ্ছে আসলেই তারা একই অবজেক্ট কি না
+            Console.WriteLine($"[Check] Is paymentLogger same as cartLogger? : {ReferenceEquals(paymentLogger, cartLogger)}");
+            
+            paymentLogger.ShowAllLogs(); // দুটো লগই এখানে দেখাবে কারণ অবজেক্ট একটাই!
 
 
-            Console.WriteLine("\n===== Example 2: Database Connection =====");
-            // 100টা API call হলেও DB connection একটাই থাকবে
-            var db1 = DatabaseConnection.GetInstance(); // connection তৈরি হলো
-            var db2 = DatabaseConnection.GetInstance(); // কিছুই হলো না, পুরোনোটা পেলো
-            var db3 = DatabaseConnection.GetInstance(); // একই কথা
+            Console.WriteLine("\n===== 2. DATABASE SINGLETON TEST =====");
+            
+            // প্রথমবার ডাকলেই শুধু কানেকশন তৈরি হবে
+            Console.WriteLine("-> User 1 is requesting data...");
+            var db1 = DatabaseConnectionPool.GetInstance();
+            db1.ExecuteQuery("SELECT * FROM Users");
 
-            Console.WriteLine(db1.Query("SELECT * FROM products"));
-            Console.WriteLine(db2.Query("SELECT * FROM users")); // db1 আর db2 একই object!
-            Console.WriteLine($"Is db1 and db2 same object? {ReferenceEquals(db1, db2)}");
+            // দ্বিতীয়বার আর কানেকশন তৈরি হবে না, আগেরটাই ব্যবহার হবে (0ms delay)
+            Console.WriteLine("\n-> User 2 is requesting data...");
+            var db2 = DatabaseConnectionPool.GetInstance();
+            db2.ExecuteQuery("SELECT * FROM Products WHERE Price > 100");
 
+            // তৃতীয়বার
+            Console.WriteLine("\n-> User 3 is requesting data...");
+            var db3 = DatabaseConnectionPool.GetInstance();
+            db3.ExecuteQuery("UPDATE Inventory SET Stock = 50");
 
-            Console.WriteLine("\n===== Example 3: App Config =====");
-            var config1 = AppConfig.GetInstance(); // 30ms লাগলো
-            var config2 = AppConfig.GetInstance(); // 0ms — cached!
-            var config3 = AppConfig.GetInstance(); // 0ms — cached!
-            Console.WriteLine($"Theme: {config1.Theme}, Language: {config1.Language}, API Key: {config1.ApiKey}");
+            Console.WriteLine($"\n[Check] Are all users using the exact same DB Connection? : {ReferenceEquals(db1, db2) && ReferenceEquals(db2, db3)}");
         }
     }
 }

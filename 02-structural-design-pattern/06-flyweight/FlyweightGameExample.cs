@@ -111,14 +111,14 @@ namespace FlyweightPattern.PUBGGame
     // 6. Map / Forest (The high-level manager)
     // ==========================================
     // Forest ক্লাসের জন্যও ইন্টারফেস (DIP)
-    public interface IMap
+    public interface IForest
     {
         void PlantTree(int x, int y, string name, string color, string texture);
         void PlantSpecialTree(int x, int y);
         void RenderMap();
     }
 
-    public class Forest : IMap
+    public class Forest : IForest
     {
         private List<IGameObject> _trees = new List<IGameObject>();
         private ITreeFactory _factory; // Dependency Injection
@@ -166,7 +166,7 @@ namespace FlyweightPattern.PUBGGame
             // Client এখন কোনো কংক্রিট ক্লাসের ওপর নির্ভর করছে না। 
             // সবকিছুই ইন্টারফেসের মাধ্যমে হচ্ছে!
             ITreeFactory factory = new TreeFactory();
-            IMap erangelMap = new Forest(factory);
+            IForest erangelMap = new Forest(factory);
 
             // ম্যাপে গাছ বসাচ্ছি
             erangelMap.PlantTree(10, 20, "Oak", "Green", "10MB_Oak_Texture.png");

@@ -74,11 +74,11 @@ namespace PrototypePattern.Components
     // ==============================================================
     // এখান থেকে প্রোগ্রাম রান হয়। এখানে আমরা ক্লায়েন্টকে ব্যবহার করে 
     // মাস্টার কপি থেকে অনেকগুলো কপি বানাবো।
-    class Program
+    public class BasicShapeRunner
     {
-        static void Main()
+        public static void Run()
         {
-            Console.WriteLine("=== Prototype Pattern Components Demo ===\n");
+            Console.WriteLine("=== Prototype Pattern Components Demo (Basic) ===\n");
 
             // ধাপ ১: আমরা একটি 'মাস্টার' সার্কেল বানালাম (এটি বানাতে ১ সেকেন্ড সময় লাগবে)
             Circle masterCircle = new Circle("Red", 10);
@@ -101,5 +101,108 @@ namespace PrototypePattern.Components
             Console.WriteLine("\n--- Checking Master ---");
             masterCircle.Draw();
         }
+    }
+}
+
+namespace PrototypePattern.Components.RealWorld
+{
+    // ==============================================================
+    // ১. Prototype Interface
+    // ==============================================================
+    // এটি কন্ট্রাক্ট যা গ্যারান্টি দেয় যে যেকোনো আইডি কার্ড কপি করা যাবে।
+    public interface IIdCard
+    {
+        IIdCard Clone();
+        void PrintCard();
+    }
+
+    // ==============================================================
+    // ২. Concrete Prototype (আসল ক্লাস)
+    // ==============================================================
+    // এটি আসল আইডি কার্ড, যা বানাতে শুরুতে একটু সময় লাগে।
+    public class SchoolIdCard : IIdCard
+    {
+        public string SchoolName { get; set; }
+        public string PrincipalSignature { get; set; }
+        public string StudentName { get; set; }
+
+        public SchoolIdCard()
+        {
+            Console.WriteLine("\n   -> [Expensive] Loading School Logo and Principal Signature from Database...");
+            Thread.Sleep(1000); 
+            
+            SchoolName = "Dhaka Zilla School";
+            PrincipalSignature = "Signed_By_Headmaster";
+        }
+
+        // এখানেই কপি করার ম্যাজিকটা আছে
+        public IIdCard Clone()
+        {
+            return (IIdCard)this.MemberwiseClone();
+        }
+
+        public void PrintCard()
+        {
+            Console.WriteLine($"[ID CARD] {StudentName} | {SchoolName} | {PrincipalSignature}");
+        }
+    }
+
+    // ==============================================================
+    // ৩. Client (ID Card Printer)
+    // ==============================================================
+    // ক্লায়েন্ট (প্রিন্টার) শুধু জানে তার কাছে একটি মাস্টার কপি আছে। 
+    // সে মাস্টার কপিকে কল করে শুধু নতুন কার্ড প্রিন্ট করে দেয়। 
+    public class IdCardPrinter
+    {
+        private IIdCard _masterCard;
+
+        // প্রিন্টার মেশিনে মাস্টার কপি সেট করা হলো
+        public IdCardPrinter(IIdCard masterCard)
+        {
+            _masterCard = masterCard;
+        }
+
+        // ক্লায়েন্ট নতুন ছাত্রের নাম নিয়ে মাস্টার কপি ক্লোন করে রিটার্ন করছে
+        public IIdCard PrintNewCard(string studentName)
+        {
+            SchoolIdCard newCard = (SchoolIdCard)_masterCard.Clone();
+            newCard.StudentName = studentName;
+            return newCard;
+        }
+    }
+
+    public class RealWorldRunner
+    {
+        public static void Run()
+        {
+            Console.WriteLine("\n=== Prototype Pattern Components Demo (Real World: School ID Card) ===\n");
+
+            // ধাপ ১: মাস্টার আইডি কার্ড বানালাম (সময় লাগবে)
+            SchoolIdCard masterCard = new SchoolIdCard();
+
+            // ধাপ ২: প্রিন্টার (ক্লায়েন্ট) এর ভেতরে মাস্টার কার্ডটি সেট করে দিলাম
+            IdCardPrinter printer = new IdCardPrinter(masterCard);
+
+            Console.WriteLine("\n--- Printing ID Cards ---");
+
+            // ধাপ ৩: প্রিন্টার (ক্লায়েন্ট) কে দিয়ে নতুন নতুন কার্ড বানাচ্ছি (কোনো সময় লাগবে না)
+            IIdCard student1 = printer.PrintNewCard("Rahim");
+            student1.PrintCard();
+
+            IIdCard student2 = printer.PrintNewCard("Karim");
+            student2.PrintCard();
+        }
+    }
+}
+
+// ══════════════════════════════════════════
+// 🚀 Main Entry Point
+// ══════════════════════════════════════════
+class Program
+{
+    static void Main()
+    {
+        PrototypePattern.Components.BasicShapeRunner.Run();
+        PrototypePattern.Components.RealWorld.RealWorldRunner.Run();
     }
 }

@@ -4,7 +4,6 @@ using System.Threading;
 // ==============================================================
 // ❌ VIOLATION: The Bad Way (প্রতিটি বাড়ির জন্য নতুন করে আর্কিটেকচার ডিজাইন করা)
 // ==============================================================
-
 namespace PrototypePattern.RealEstate.Violation
 {
     public class HouseBlueprint
@@ -50,24 +49,31 @@ namespace PrototypePattern.RealEstate.Violation
 }
 
 // ==============================================================
-// ✅ SOLUTION: The Good Way (মাস্টার ব্লু-প্রিন্ট ক্লোন করা)
+// ✅ SOLUTION: The Good Way (Using 4 Prototype Components)
 // ==============================================================
-
 namespace PrototypePattern.RealEstate.Solution
 {
+    // ==============================================================
+    // ১. Prototype Interface
+    // ==============================================================
     public interface IHousePrototype
     {
         IHousePrototype Clone();
+        void CustomizeHouse(string houseNumber, string color);
+        void Display();
     }
 
+    // ==============================================================
+    // ২. Concrete Prototype
+    // ==============================================================
     public class HouseBlueprint : IHousePrototype
     {
-        public string FoundationPlan { get; set; }
-        public string PlumbingSystem { get; set; }
-        public string RoofDesign { get; set; }
+        public string FoundationPlan { get; private set; }
+        public string PlumbingSystem { get; private set; }
+        public string RoofDesign { get; private set; }
         
-        public string HouseNumber { get; set; }
-        public string PaintColor { get; set; }
+        public string HouseNumber { get; private set; }
+        public string PaintColor { get; private set; }
 
         public HouseBlueprint()
         {
@@ -77,6 +83,12 @@ namespace PrototypePattern.RealEstate.Solution
             FoundationPlan = "Duplex Foundation 2500 sqft";
             PlumbingSystem = "Modern European Plumbing";
             RoofDesign = "Flat Roof with Garden";
+        }
+
+        public void CustomizeHouse(string houseNumber, string color)
+        {
+            HouseNumber = houseNumber;
+            PaintColor = color;
         }
 
         public IHousePrototype Clone()
@@ -90,22 +102,46 @@ namespace PrototypePattern.RealEstate.Solution
         }
     }
 
+    // ==============================================================
+    // ৩. Client (ConstructionCompany)
+    // ==============================================================
+    public class ConstructionCompany
+    {
+        private IHousePrototype _masterBlueprint;
+
+        public ConstructionCompany(IHousePrototype masterBlueprint)
+        {
+            _masterBlueprint = masterBlueprint;
+        }
+
+        public IHousePrototype BuildHouse(string houseNumber, string color)
+        {
+            var clone = _masterBlueprint.Clone();
+            clone.CustomizeHouse(houseNumber, color);
+            return clone;
+        }
+    }
+
+    // ==============================================================
+    // ৪. Main Class (SolutionRunner)
+    // ==============================================================
     public class SolutionRunner
     {
         public static void Run()
         {
-            Console.WriteLine("\n=== ✅ SOLUTION RUN: মাস্টার ব্লু-প্রিন্ট ক্লোন করে শুধু নাম্বার ও কালার চেঞ্জ করা ===");
+            Console.WriteLine("\n=== ✅ SOLUTION RUN: Prototype Pattern (Using 4 Components) ===");
             
+            // মাস্টার ব্লু-প্রিন্ট
             var masterBlueprint = new HouseBlueprint();
 
-            var house1 = (HouseBlueprint)masterBlueprint.Clone();
-            house1.HouseNumber = "H-101";
-            house1.PaintColor = "White";
+            // কন্সট্রাকশন কোম্পানির (ক্লায়েন্ট) কাছে মাস্টার ডিজাইন দেওয়া হলো
+            var company = new ConstructionCompany(masterBlueprint);
+
+            // কোম্পানি মাস্টার কপি ক্লোন করে কাস্টম বাড়ি বানাচ্ছে
+            var house1 = company.BuildHouse("H-101", "White");
             house1.Display();
 
-            var house2 = (HouseBlueprint)masterBlueprint.Clone();
-            house2.HouseNumber = "H-102";
-            house2.PaintColor = "Light Yellow";
+            var house2 = company.BuildHouse("H-102", "Light Yellow");
             house2.Display();
         }
     }

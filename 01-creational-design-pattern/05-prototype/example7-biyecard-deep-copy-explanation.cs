@@ -6,7 +6,6 @@ using System.Threading;
 // ==============================================================
 namespace PrototypePattern.BiyeCard.Violation
 {
-    // ভেন্যু ক্লাস (Reference Type)
     public class Venue
     {
         public string HallName, Address;
@@ -22,9 +21,8 @@ namespace PrototypePattern.BiyeCard.Violation
         {
             GroomName = groom; BrideName = bride; Date = date; Venue = venue;
 
-            // ধরে নিচ্ছি - বর্ডার ডিজাইন বানাতে অনেক সময়/effort লাগে
             Console.WriteLine($"   -> {groom}-{bride}'র জন্য নতুন বর্ডার ডিজাইন বানানো হচ্ছে...");
-            Thread.Sleep(1000); // expensive কাজ simulate করছি
+            Thread.Sleep(1000); 
             BorderDesign = "Gold-Floral-Mandala-v1";
         }
     }
@@ -34,61 +32,75 @@ namespace PrototypePattern.BiyeCard.Violation
         public static void Run()
         {
             Console.WriteLine("=== ❌ VIOLATION RUN ===");
-            // প্রতিটা পরিবারের জন্য আবার পুরো design কাজ থেকে শুরু - একই জিনিস বারবার বানানো হচ্ছে
             var card1 = new BiyeCard("Arnab", "Priya", "20 Dec 2026", new Venue("Rajbari Hall", "Dhanmondi"));
-            var card2 = new BiyeCard("Rahim", "Sumi", "5 Jan 2027", new Venue("Rajbari Hall", "Dhanmondi"));
-
-            // আরেকটা খুবই common ভুল - মনে করা "=" দিয়ে copy হয়ে যাবে
+            
             // ❌ লাইন ব্যাখ্যা: এখানে card1 এর মেমোরি অ্যাড্রেসটা card3 এর ভেতরে ঢুকে গেলো। 
-            // কোনো নতুন অবজেক্ট তৈরি হয়নি! card3 এবং card1 একই জিনিসকে পয়েন্ট করছে।
             var card3 = card1; 
             
             // ❌ লাইন ব্যাখ্যা: যেহেতু card3 আর card1 একই জিনিস, তাই card3 এর নাম বদলালে
             // card1 এর নামও বদলে যাবে। এটি একটি মারাত্মক বাগ!
             card3.GroomName = "Tanvir"; 
             
-            // আউটপুট: "Tanvir" — card1-ও বদলে গেলো! 
             Console.WriteLine($"Card1 Groom Name: {card1.GroomName} (Unexpected Bug!)"); 
         }
     }
 }
 
 // ==============================================================
-// ✅ SOLUTION: Prototype Pattern (ICloneable & Deep Copy)
+// ✅ SOLUTION: Prototype Pattern (Using 4 Components & Deep Copy)
 // ==============================================================
 namespace PrototypePattern.BiyeCard.Solution
 {
-    // ১. Venue ক্লাসকে ICloneable করা হলো যাতে সেও নিজের কপি বানাতে পারে
     public class Venue : ICloneable
     {
         public string HallName, Address;
         public Venue(string hall, string address) { HallName = hall; Address = address; }
         
-        // ✅ লাইন ব্যাখ্যা: Venue এর নিজস্ব Clone মেথড। এটি একটি সম্পূর্ণ নতুন 
-        // Venue অবজেক্ট (independent কপি) তৈরি করে মেমোরিতে নতুন জায়গা নিচ্ছে।
         public object Clone() => new Venue(HallName, Address); 
     }
 
-    // ২. BiyeCard ক্লাসকেও ICloneable করা হলো
-    public class BiyeCard : ICloneable
+    // ==============================================================
+    // ১. Prototype Interface
+    // ==============================================================
+    public interface IBiyeCard
     {
-        public string GroomName, BrideName, Date, BorderDesign;
-        public Venue Venue; // Nested Object (Reference Type)
+        IBiyeCard Clone();
+        void Customize(string groom, string bride, string date);
+        void SetVenueAddress(string address);
+        string GetVenueAddress();
+        void Display();
+    }
+
+    // ==============================================================
+    // ২. Concrete Prototype
+    // ==============================================================
+    public class BiyeCard : IBiyeCard
+    {
+        public string GroomName { get; private set; }
+        public string BrideName { get; private set; }
+        public string Date { get; private set; }
+        public string BorderDesign { get; private set; }
+        public Venue Venue { get; private set; }
 
         public BiyeCard(string groom, string bride, string date, Venue venue, string border)
         { 
             GroomName = groom; BrideName = bride; Date = date; Venue = venue; BorderDesign = border; 
         }
 
-        public object Clone()
+        public void Customize(string groom, string bride, string date)
         {
-            // 🌟 Deep clone ম্যাজিক:
-            // ✅ লাইন ব্যাখ্যা: এখানে আমরা Venue.Clone() কল করে Venue ক্লাসের একটি নতুন কপি বানালাম।
-            // এতে করে পুরনো Venue এর সাথে নতুন Venue এর reference শেয়ার হবে না!
+            GroomName = groom;
+            BrideName = bride;
+            Date = date;
+        }
+
+        public void SetVenueAddress(string address) => Venue.Address = address;
+        public string GetVenueAddress() => Venue.Address;
+
+        // 🌟 Deep clone ম্যাজিক:
+        public IBiyeCard Clone()
+        {
             Venue clonedVenue = (Venue)Venue.Clone();
-            
-            // ✅ লাইন ব্যাখ্যা: নতুন কপি করা Venue টি ব্যবহার করে নতুন একটি BiyeCard তৈরি করে রিটার্ন করছি।
-            // এটাই হলো Deep Copy.
             return new BiyeCard(GroomName, BrideName, Date, clonedVenue, BorderDesign);
         }
 
@@ -98,44 +110,59 @@ namespace PrototypePattern.BiyeCard.Solution
         }
     }
 
+    // ==============================================================
+    // ৩. Client (CardDesignStudio)
+    // ==============================================================
+    public class CardDesignStudio
+    {
+        private IBiyeCard _masterTemplate;
+
+        public CardDesignStudio(IBiyeCard masterTemplate)
+        {
+            _masterTemplate = masterTemplate;
+        }
+
+        public IBiyeCard PrintCustomCard(string groom, string bride, string date)
+        {
+            var clone = _masterTemplate.Clone();
+            clone.Customize(groom, bride, date);
+            return clone;
+        }
+    }
+
+    // ==============================================================
+    // ৪. Main Class (SolutionRunner)
+    // ==============================================================
     public class SolutionRunner
     {
         public static void Run()
         {
-            Console.WriteLine("\n=== ✅ SOLUTION RUN ===");
+            Console.WriteLine("\n=== ✅ SOLUTION RUN: Prototype Pattern (Using 4 Components) ===");
 
-            // মাস্টার টেমপ্লেট - শুধু একবার "expensive" design কাজ হলো
+            // ১. মাস্টার টেমপ্লেট
             var masterTemplate = new BiyeCard("___", "___", "___",
                                    new Venue("Rajbari Hall", "Dhanmondi"), "Gold-Floral-Mandala-v1");
 
-            // বাকি সব কার্ড - শুধু clone করে নাম/তারিখ বদলে দিচ্ছি, design আবার বানাচ্ছি না
-            // ✅ লাইন ব্যাখ্যা: masterTemplate.Clone() কল করার ফলে আমাদের Deep Copy মেথড ফায়ার হলো।
-            // এবং সম্পূর্ণ নতুন মেমোরি অ্যাড্রেস সহ একটি independent কার্ড তৈরি হলো।
-            var card1 = (BiyeCard)masterTemplate.Clone();
-            card1.GroomName = "Arnab"; 
-            card1.BrideName = "Priya"; 
-            card1.Date = "20 Dec 2026";
+            // ২. স্টুডিও (ক্লায়েন্ট) এর কাছে মাস্টার কপি দিলাম
+            var studio = new CardDesignStudio(masterTemplate);
+
+            // ৩. ক্লায়েন্টকে দিয়ে প্রথম কার্ড ক্লোন করালাম
+            var card1 = studio.PrintCustomCard("Arnab", "Priya", "20 Dec 2026");
             card1.Display();
 
-            var card2 = (BiyeCard)masterTemplate.Clone();
-            card2.GroomName = "Rahim"; 
-            card2.BrideName = "Sumi";
+            // ৪. দ্বিতীয় কার্ড ক্লোন করালাম
+            var card2 = studio.PrintCustomCard("Rahim", "Sumi", "5 Jan 2027");
             
             // 🌟 Deep Copy এর চাক্ষুষ প্রমান: 
-            // ✅ লাইন ব্যাখ্যা: card2-র venue আলাদা। এটা চেঞ্জ করলেও masterTemplate বা card1 এর কোনো ক্ষতি হবে না।
-            // কারণ Deep Copy এর ফলে সবার Venue অবজেক্ট আলাদা আলাদা মেমোরিতে আছে।
-            card2.Venue.Address = "Mirpur, Dhaka"; 
+            card2.SetVenueAddress("Mirpur, Dhaka"); 
             card2.Display();
 
             // প্রমাণ করে দিচ্ছি যে মাস্টার কপিটি সুরক্ষিত আছে
-            Console.WriteLine($"\n[Check Master] Master Venue Address: {masterTemplate.Venue.Address} (Unchanged!)");
+            Console.WriteLine($"\n[Check Master] Master Venue Address: {masterTemplate.GetVenueAddress()} (Unchanged!)");
         }
     }
 }
 
-// ══════════════════════════════════════════
-// 🚀 Main Entry Point
-// ══════════════════════════════════════════
 class Program
 {
     static void Main()

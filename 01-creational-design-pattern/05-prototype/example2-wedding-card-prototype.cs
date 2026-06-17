@@ -4,10 +4,6 @@ using System.Threading;
 // ==============================================================
 // ❌ VIOLATION: The Bad Way (বারবার স্ক্র্যাচ থেকে বানানো)
 // ==============================================================
-// সমস্যা: যদি আমরা প্রোটোটাইপ ব্যবহার না করি, তবে প্রতিটি মেহমানের জন্য 
-// কার্ড বানানোর সময় 'মাস্টার ডেটা' (যেমন পাত্র-পাত্রীর নাম, ভেন্যু, ডিজাইন) 
-// বারবার সেট করতে হবে। এতে অনেক সময় এবং মেমোরি নষ্ট হয়।
-
 namespace PrototypePattern.WeddingCard.Violation
 {
     public class WeddingCard
@@ -19,9 +15,8 @@ namespace PrototypePattern.WeddingCard.Violation
 
         public WeddingCard(string groomAndBride, string venue, string date, string guestName)
         {
-            // ধরি, এই ডেটাগুলো সেট করা অনেক এক্সপেনসিভ কাজ!
             Console.WriteLine(">> [Violation] ডিজাইনার নতুন করে কার্ড ডিজাইন করছে... (Expensive Operation)");
-            Thread.Sleep(500); // সিমুলেট করছি যে অনেক সময় লাগছে
+            Thread.Sleep(500); 
 
             GroomAndBride = groomAndBride;
             Venue = venue;
@@ -40,8 +35,6 @@ namespace PrototypePattern.WeddingCard.Violation
         public static void Run()
         {
             Console.WriteLine("=== ❌ VIOLATION RUN: প্রতিটি মেহমানের জন্য নতুন কার্ড ডিজাইন ===");
-            
-            // সমস্যা: প্রত্যেকবার নতুন অবজেক্ট বানালে প্রত্যেকবার ডিজাইনারকে নতুন করে কাজ করতে হচ্ছে! (সময় নষ্ট)
             var card1 = new WeddingCard("রহিম ও কারিমা", "সেনাকুঞ্জ", "১২ই ডিসেম্বর", "খালেক চাচা");
             card1.PrintCard();
 
@@ -53,24 +46,29 @@ namespace PrototypePattern.WeddingCard.Violation
 
 
 // ==============================================================
-// ✅ SOLUTION: The Good Way (মাস্টার কপি ফটোকপি করা)
+// ✅ SOLUTION: The Good Way (Using 4 Prototype Components)
 // ==============================================================
-// সমাধান: আমরা একটি 'মাস্টার কপি' বানাবো। এরপর জাস্ট সেটাকে ক্লোন (ফটোকপি) করে
-// শুধু মেহমানের নাম চেঞ্জ করে দেবো!
-
 namespace PrototypePattern.WeddingCard.Solution
 {
+    // ==============================================================
+    // ১. Prototype Interface
+    // ==============================================================
     public interface ICloneableCard
     {
         ICloneableCard Clone();
+        void SetGuestName(string guestName);
+        void PrintCard();
     }
 
+    // ==============================================================
+    // ২. Concrete Prototype
+    // ==============================================================
     public class WeddingCard : ICloneableCard
     {
-        public string GroomAndBride { get; set; }
-        public string Venue { get; set; }
-        public string Date { get; set; }
-        public string GuestName { get; set; }
+        public string GroomAndBride { get; private set; }
+        public string Venue { get; private set; }
+        public string Date { get; private set; }
+        public string GuestName { get; private set; }
 
         public WeddingCard(string groomAndBride, string venue, string date)
         {
@@ -82,9 +80,13 @@ namespace PrototypePattern.WeddingCard.Solution
             Date = date;
         }
 
+        public void SetGuestName(string guestName)
+        {
+            GuestName = guestName;
+        }
+
         public ICloneableCard Clone()
         {
-            // জাস্ট ফটোকপি মেশিন দিয়ে ফটোকপি করে দিলাম!
             return (ICloneableCard)this.MemberwiseClone(); 
         }
 
@@ -94,22 +96,47 @@ namespace PrototypePattern.WeddingCard.Solution
         }
     }
 
+    // ==============================================================
+    // ৩. Client (PrintingPress)
+    // ==============================================================
+    public class CardPrintingPress
+    {
+        private ICloneableCard _masterTemplate;
+
+        public CardPrintingPress(ICloneableCard masterTemplate)
+        {
+            _masterTemplate = masterTemplate;
+        }
+
+        public ICloneableCard PrintForGuest(string guestName)
+        {
+            // ক্লায়েন্ট মাস্টারকে ক্লোন করছে
+            var clone = _masterTemplate.Clone();
+            clone.SetGuestName(guestName);
+            return clone;
+        }
+    }
+
+    // ==============================================================
+    // ৪. Main Class (SolutionRunner)
+    // ==============================================================
     public class SolutionRunner
     {
         public static void Run()
         {
-            Console.WriteLine("=== ✅ SOLUTION RUN: একবার ডিজাইন করে বারবার ফটোকপি (Clone) ===");
+            Console.WriteLine("=== ✅ SOLUTION RUN: Prototype Pattern (Using 4 Components) ===");
             
-            // ১. একবারই মাস্টার কপি বানালাম (সময় বাঁচলো)
+            // ১. একবারই মাস্টার কপি বানালাম 
             var masterCopy = new WeddingCard("রহিম ও কারিমা", "সেনাকুঞ্জ", "১২ই ডিসেম্বর");
 
-            // ২. এবার জাস্ট ফটোকপি করে নাম বসাচ্ছি (No extra time needed!)
-            var card1 = (WeddingCard)masterCopy.Clone();
-            card1.GuestName = "খালেক চাচা";
+            // ২. প্রিন্টিং প্রেস (ক্লায়েন্ট) এর কাছে মাস্টার কপি দিয়ে দিলাম
+            var press = new CardPrintingPress(masterCopy);
+
+            // ৩. ক্লায়েন্টকে দিয়ে শুধু নাম বসিয়ে ফটোকপি করাচ্ছি
+            var card1 = press.PrintForGuest("খালেক চাচা");
             card1.PrintCard();
 
-            var card2 = (WeddingCard)masterCopy.Clone();
-            card2.GuestName = "বন্ধু শফিক";
+            var card2 = press.PrintForGuest("বন্ধু শফিক");
             card2.PrintCard();
         }
     }

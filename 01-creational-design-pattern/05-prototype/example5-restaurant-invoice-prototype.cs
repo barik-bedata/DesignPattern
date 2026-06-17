@@ -4,7 +4,6 @@ using System.Threading;
 // ==============================================================
 // ❌ VIOLATION: The Bad Way (প্রতিটি বিলের জন্য লোগো ও হেডার লোড করা)
 // ==============================================================
-
 namespace PrototypePattern.Invoice.Violation
 {
     public class RestaurantInvoice
@@ -52,23 +51,30 @@ namespace PrototypePattern.Invoice.Violation
 }
 
 // ==============================================================
-// ✅ SOLUTION: The Good Way (মাস্টার ইনভয়েস ক্লোন করা)
+// ✅ SOLUTION: The Good Way (Using 4 Prototype Components)
 // ==============================================================
-
 namespace PrototypePattern.Invoice.Solution
 {
+    // ==============================================================
+    // ১. Prototype Interface
+    // ==============================================================
     public interface IInvoicePrototype
     {
         IInvoicePrototype Clone();
+        void SetBillingDetails(string customerName, decimal amount);
+        void Print();
     }
 
+    // ==============================================================
+    // ২. Concrete Prototype
+    // ==============================================================
     public class RestaurantInvoice : IInvoicePrototype
     {
-        public string RestaurantLogo { get; set; }
-        public string Address { get; set; }
-        public string VatRegNumber { get; set; }
-        public string CustomerName { get; set; }
-        public decimal TotalAmount { get; set; }
+        public string RestaurantLogo { get; private set; }
+        public string Address { get; private set; }
+        public string VatRegNumber { get; private set; }
+        public string CustomerName { get; private set; }
+        public decimal TotalAmount { get; private set; }
 
         public RestaurantInvoice()
         {
@@ -78,6 +84,12 @@ namespace PrototypePattern.Invoice.Solution
             RestaurantLogo = "[কাচ্চি ভাই - Kacchi Bhai Logo]";
             Address = "Mirpur-10, Dhaka";
             VatRegNumber = "VAT-9988776655";
+        }
+
+        public void SetBillingDetails(string customerName, decimal amount)
+        {
+            CustomerName = customerName;
+            TotalAmount = amount;
         }
 
         public IInvoicePrototype Clone()
@@ -94,22 +106,46 @@ namespace PrototypePattern.Invoice.Solution
         }
     }
 
+    // ==============================================================
+    // ৩. Client (BillingSystem)
+    // ==============================================================
+    public class BillingSystem
+    {
+        private IInvoicePrototype _masterInvoice;
+
+        public BillingSystem(IInvoicePrototype masterInvoice)
+        {
+            _masterInvoice = masterInvoice;
+        }
+
+        public IInvoicePrototype GenerateBill(string customerName, decimal amount)
+        {
+            var clone = _masterInvoice.Clone();
+            clone.SetBillingDetails(customerName, amount);
+            return clone;
+        }
+    }
+
+    // ==============================================================
+    // ৪. Main Class (SolutionRunner)
+    // ==============================================================
     public class SolutionRunner
     {
         public static void Run()
         {
-            Console.WriteLine("\n=== ✅ SOLUTION RUN: মাস্টার ইনভয়েস ক্লোন করে শুধু কাস্টমার ডেটা বসানো ===");
+            Console.WriteLine("\n=== ✅ SOLUTION RUN: Prototype Pattern (Using 4 Components) ===");
             
+            // মাস্টার ইনভয়েস লোড করা
             var masterInvoice = new RestaurantInvoice();
 
-            var bill1 = (RestaurantInvoice)masterInvoice.Clone();
-            bill1.CustomerName = "Karim";
-            bill1.TotalAmount = 1200;
+            // বিলিং সিস্টেমে (ক্লায়েন্ট) মাস্টার কপি দিয়ে দেওয়া
+            var system = new BillingSystem(masterInvoice);
+
+            // শুধু বিলিং ডিটেইলস চেঞ্জ করে ক্লোন করা
+            var bill1 = system.GenerateBill("Karim", 1200);
             bill1.Print();
 
-            var bill2 = (RestaurantInvoice)masterInvoice.Clone();
-            bill2.CustomerName = "Rahim";
-            bill2.TotalAmount = 850;
+            var bill2 = system.GenerateBill("Rahim", 850);
             bill2.Print();
         }
     }

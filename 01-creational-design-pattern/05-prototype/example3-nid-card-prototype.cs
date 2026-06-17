@@ -4,7 +4,6 @@ using System.Threading;
 // ==============================================================
 // ❌ VIOLATION: The Bad Way (বারবার NID এর ব্যাকগ্রাউন্ড লোড করা)
 // ==============================================================
-
 namespace PrototypePattern.NIDCard.Violation
 {
     public class NIDCard
@@ -44,21 +43,28 @@ namespace PrototypePattern.NIDCard.Violation
 }
 
 // ==============================================================
-// ✅ SOLUTION: The Good Way (ব্লাংক NID কে ফটোকপি করা)
+// ✅ SOLUTION: The Good Way (Using 4 Prototype Components)
 // ==============================================================
-
 namespace PrototypePattern.NIDCard.Solution
 {
+    // ==============================================================
+    // ১. Prototype Interface
+    // ==============================================================
     public interface INIDPrototype
     {
         INIDPrototype Clone();
+        void SetCitizenName(string name);
+        void Display();
     }
 
+    // ==============================================================
+    // ২. Concrete Prototype
+    // ==============================================================
     public class NIDCard : INIDPrototype
     {
-        public string GovtSeal { get; set; }
-        public string HologramDesign { get; set; }
-        public string CitizenName { get; set; }
+        public string GovtSeal { get; private set; }
+        public string HologramDesign { get; private set; }
+        public string CitizenName { get; private set; }
 
         public NIDCard()
         {
@@ -67,6 +73,11 @@ namespace PrototypePattern.NIDCard.Solution
 
             GovtSeal = "Govt. of Bangladesh Seal";
             HologramDesign = "High Security Hologram 3D";
+        }
+
+        public void SetCitizenName(string name)
+        {
+            CitizenName = name;
         }
 
         public INIDPrototype Clone()
@@ -80,20 +91,46 @@ namespace PrototypePattern.NIDCard.Solution
         }
     }
 
+    // ==============================================================
+    // ৩. Client (ElectionCommissionServer)
+    // ==============================================================
+    public class ElectionCommissionServer
+    {
+        private INIDPrototype _blankTemplate;
+
+        public ElectionCommissionServer(INIDPrototype blankTemplate)
+        {
+            _blankTemplate = blankTemplate;
+        }
+
+        public INIDPrototype IssueNID(string name)
+        {
+            var clone = _blankTemplate.Clone();
+            clone.SetCitizenName(name);
+            return clone;
+        }
+    }
+
+    // ==============================================================
+    // ৪. Main Class (SolutionRunner)
+    // ==============================================================
     public class SolutionRunner
     {
         public static void Run()
         {
-            Console.WriteLine("\n=== ✅ SOLUTION RUN: ব্ল্যাংক মাস্টার কপিকে ক্লোন করে শুধু নাম বসানো ===");
+            Console.WriteLine("\n=== ✅ SOLUTION RUN: Prototype Pattern (Using 4 Components) ===");
             
+            // মাস্টার ব্লাংক কার্ড
             var blankMasterNID = new NIDCard();
 
-            var p1 = (NIDCard)blankMasterNID.Clone();
-            p1.CitizenName = "Bedata";
+            // সার্ভার (ক্লায়েন্ট) এর কাছে ব্লাংক টেমপ্লেট দিয়ে দিলাম
+            var server = new ElectionCommissionServer(blankMasterNID);
+
+            // সার্ভার শুধু ক্লোন করে নাম বসিয়ে দিচ্ছে
+            var p1 = server.IssueNID("Bedata");
             p1.Display();
 
-            var p2 = (NIDCard)blankMasterNID.Clone();
-            p2.CitizenName = "Barik";
+            var p2 = server.IssueNID("Barik");
             p2.Display();
         }
     }

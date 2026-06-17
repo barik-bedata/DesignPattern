@@ -22,4 +22,4 @@
 
 ## 💻 উদাহরণের কোড (Code Example)
 এই ৪টি কম্পোনেন্ট ব্যবহার করে কীভাবে একটি কোড লেখা যায়, তা দেখতে নিচের ফাইলে ক্লিক করুন:
-👉 **[example8-components-of-prototype.cs](example8-components-of-prototype.cs)**
+👉 **[Components.cs](Components.cs)**

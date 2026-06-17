@@ -16,10 +16,6 @@ namespace PrototypePattern.Shared
 // ==============================================================
 // ❌ VIOLATION: The Bad Way (ম্যানুয়ালি কপি করা)
 // ==============================================================
-// সমস্যা: একটি অবজেক্টের হুবহু কপি বানাতে চাইলে আমাদের প্রতিটি প্রপার্টি
-// ম্যানুয়ালি ধরে ধরে কপি করতে হয়। অবজেক্টে যদি ৫০টি প্রপার্টি থাকে, 
-// তবে ৫০ লাইন কোড লিখতে হবে শুধু কপি করার জন্যই!
-
 namespace PrototypePattern.Violation
 {
     using Shared;
@@ -45,12 +41,11 @@ namespace PrototypePattern.Violation
             // অরিজিনাল এনিমি
             var bossEnemy = new Enemy { Type = "Orc Boss", Health = 1000, EnemyWeapon = new Weapon("Axe") };
             
-            // এখন আমি চাই বস এনিমির হুবহু একটা ক্লোন বানাতে, শুধু হেলথ একটু কম হবে।
             // সমস্যা: আমাকে ম্যানুয়ালি সব প্রপার্টি কপি করতে হচ্ছে! (Tedious & Error-prone)
             var clonedEnemy = new Enemy();
             clonedEnemy.Type = bossEnemy.Type; 
-            clonedEnemy.Health = 500; // শুধু এটা চেঞ্জ করলাম
-            clonedEnemy.EnemyWeapon = new Weapon(bossEnemy.EnemyWeapon.Name); // রেফারেন্স টাইপ কপি করা আরও ঝামেলার!
+            clonedEnemy.Health = 500; 
+            clonedEnemy.EnemyWeapon = new Weapon(bossEnemy.EnemyWeapon.Name); 
 
             bossEnemy.Display();
             clonedEnemy.Display();
@@ -59,23 +54,29 @@ namespace PrototypePattern.Violation
 }
 
 // ==============================================================
-// ✅ SOLUTION: The Good Way (Using Prototype Pattern)
+// ✅ SOLUTION: The Good Way (Using 4 Prototype Components)
 // ==============================================================
-// সমাধান: অবজেক্ট নিজেই নিজেকে কপি (Clone) করার ক্ষমতা রাখবে। 
-// C# এ ICloneable ইন্টারফেস ব্যবহার করা যায়, অথবা নিজস্ব Clone মেথড বানানো যায়।
-
 namespace PrototypePattern.Solution
 {
     using Shared;
 
-    // ১. Prototype Interface (অথবা শুধু একটি Clone মেথড রাখলেও হয়)
+    // ==============================================================
+    // ১. Prototype Interface
+    // ==============================================================
     public interface IEnemyPrototype
     {
         IEnemyPrototype ShallowCopy();
         IEnemyPrototype DeepCopy();
+        void Display();
+        
+        // Helper methods for the client to modify stats
+        void SetHealth(int health);
+        void SetWeaponName(string name);
     }
 
+    // ==============================================================
     // ২. Concrete Prototype
+    // ==============================================================
     public class Enemy : IEnemyPrototype
     {
         public string Type { get; set; }
@@ -87,62 +88,90 @@ namespace PrototypePattern.Solution
             Console.WriteLine($"[Enemy] Type: {Type}, Health: {Health}, Weapon: {EnemyWeapon?.Name}");
         }
 
+        public void SetHealth(int health) => Health = health;
+        public void SetWeaponName(string name) { if (EnemyWeapon != null) EnemyWeapon.Name = name; }
+
         // --------------------------------------------------------
-        // Shallow Copy (ভাসা ভাসা কপি)
-        // ভ্যালু টাইপ (int, string) কপি হবে, কিন্তু রেফারেন্স টাইপ (Weapon) 
-        // কপি হবে না, মেমোরি অ্যাড্রেস শেয়ার করবে!
+        // Shallow Copy (ভাসা ভাসা কপি - মেমোরি শেয়ার হবে)
         // --------------------------------------------------------
         public IEnemyPrototype ShallowCopy()
         {
-            // MemberwiseClone() C# এর বিল্ট-ইন মেথড যা শ্যালো কপি করে।
             return (IEnemyPrototype)this.MemberwiseClone(); 
         }
 
         // --------------------------------------------------------
-        // Deep Copy (গভীর কপি)
-        // ভ্যালু এবং রেফারেন্স টাইপ— সবকিছু একদম নতুন করে মেমোরিতে কপি হবে।
+        // Deep Copy (গভীর কপি - নতুন লিস্ট/অবজেক্ট তৈরি হবে)
         // --------------------------------------------------------
         public IEnemyPrototype DeepCopy()
         {
             var clone = (Enemy)this.MemberwiseClone();
-            // রেফারেন্স টাইপকে ম্যানুয়ালি নতুন করে ইনস্ট্যান্স বানিয়ে কপি করতে হবে
             clone.EnemyWeapon = new Weapon(this.EnemyWeapon.Name);
             return clone;
         }
     }
 
+    // ==============================================================
+    // ৩. Client (EnemySpawner)
+    // ==============================================================
+    public class EnemySpawner
+    {
+        private IEnemyPrototype _masterEnemy;
+
+        public EnemySpawner(IEnemyPrototype masterEnemy)
+        {
+            _masterEnemy = masterEnemy;
+        }
+
+        public IEnemyPrototype SpawnShallowClone()
+        {
+            return _masterEnemy.ShallowCopy();
+        }
+
+        public IEnemyPrototype SpawnDeepClone()
+        {
+            return _masterEnemy.DeepCopy();
+        }
+    }
+
+    // ==============================================================
+    // ৪. Main Class (SolutionRunner)
+    // ==============================================================
     public class SolutionRunner
     {
         public static void Run()
         {
-            Console.WriteLine("\n=== ✅ SOLUTION RUN: Prototype Pattern (Shallow vs Deep Copy) ===");
+            Console.WriteLine("\n=== ✅ SOLUTION RUN: Prototype Pattern (Using 4 Components) ===");
 
-            var originalEnemy = new Enemy { Type = "Goblin", Health = 100, EnemyWeapon = new Weapon("Dagger") };
-            Console.WriteLine("\n--- Original ---");
-            originalEnemy.Display();
+            // ১. মাস্টার এনিমি তৈরি করা
+            var masterEnemy = new Enemy { Type = "Goblin", Health = 100, EnemyWeapon = new Weapon("Dagger") };
+            Console.WriteLine("\n--- Original Master ---");
+            masterEnemy.Display();
+
+            // ২. ক্লায়েন্টকে মাস্টার কপি দিয়ে দেওয়া
+            var spawner = new EnemySpawner(masterEnemy);
 
             // ⚠️ Shallow Copy Test
-            var shallowClone = (Enemy)originalEnemy.ShallowCopy();
-            shallowClone.Health = 50; 
-            shallowClone.EnemyWeapon.Name = "Wooden Stick"; // ❌ শ্যালো কপিতে উইপন চেঞ্জ করলে অরিজিনালটারও চেঞ্জ হয়ে যাবে!
+            var shallowClone = spawner.SpawnShallowClone();
+            shallowClone.SetHealth(50); 
+            shallowClone.SetWeaponName("Wooden Stick"); // ❌ শ্যালো কপিতে মাস্টারও পালটে যাবে!
 
             Console.WriteLine("\n--- After Shallow Clone changed Weapon to 'Wooden Stick' ---");
-            Console.WriteLine("Original:");
-            originalEnemy.Display(); // অরিজিনাল উইপনও "Wooden Stick" হয়ে গেছে! (কারন মেমোরি রেফারেন্স সেম)
+            Console.WriteLine("Original Master:");
+            masterEnemy.Display(); 
             Console.WriteLine("Shallow Clone:");
             shallowClone.Display();
 
             // 🔄 অরিজিনাল উইপন ঠিক করে নিচ্ছি
-            originalEnemy.EnemyWeapon.Name = "Dagger";
+            masterEnemy.SetWeaponName("Dagger");
 
             // ✅ Deep Copy Test
-            var deepClone = (Enemy)originalEnemy.DeepCopy();
-            deepClone.Health = 80;
-            deepClone.EnemyWeapon.Name = "Iron Sword"; // ✅ ডিপ কপিতে উইপন চেঞ্জ করলে অরিজিনালটার কোনো সমস্যা হবে না!
+            var deepClone = spawner.SpawnDeepClone();
+            deepClone.SetHealth(80);
+            deepClone.SetWeaponName("Iron Sword"); // ✅ ডিপ কপিতে মাস্টারের কোনো সমস্যা হবে না!
 
             Console.WriteLine("\n--- After Deep Clone changed Weapon to 'Iron Sword' ---");
-            Console.WriteLine("Original:");
-            originalEnemy.Display(); // অরিজিনাল উইপন "Dagger" ই আছে! (কারন সম্পূর্ণ নতুন মেমোরি)
+            Console.WriteLine("Original Master:");
+            masterEnemy.Display(); 
             Console.WriteLine("Deep Clone:");
             deepClone.Display();
         }

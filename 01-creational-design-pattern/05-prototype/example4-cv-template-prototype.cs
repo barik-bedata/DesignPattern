@@ -4,7 +4,6 @@ using System.Threading;
 // ==============================================================
 // ❌ VIOLATION: The Bad Way (প্রতিটি চাকরির জন্য নতুন CV বানানো)
 // ==============================================================
-
 namespace PrototypePattern.CVTemplate.Violation
 {
     public class Resume
@@ -46,22 +45,29 @@ namespace PrototypePattern.CVTemplate.Violation
 }
 
 // ==============================================================
-// ✅ SOLUTION: The Good Way (মাস্টার CV কে ক্লোন করা)
+// ✅ SOLUTION: The Good Way (Using 4 Prototype Components)
 // ==============================================================
-
 namespace PrototypePattern.CVTemplate.Solution
 {
+    // ==============================================================
+    // ১. Prototype Interface
+    // ==============================================================
     public interface IResumePrototype
     {
         IResumePrototype Clone();
+        void SetObjective(string objective);
+        void Show();
     }
 
+    // ==============================================================
+    // ২. Concrete Prototype
+    // ==============================================================
     public class Resume : IResumePrototype
     {
-        public string Education { get; set; }
-        public string Skills { get; set; }
-        public string Experience { get; set; }
-        public string Objective { get; set; }
+        public string Education { get; private set; }
+        public string Skills { get; private set; }
+        public string Experience { get; private set; }
+        public string Objective { get; private set; }
 
         public Resume()
         {
@@ -71,6 +77,11 @@ namespace PrototypePattern.CVTemplate.Solution
             Education = "B.Sc in CSE from BUET";
             Skills = "C#, .NET, Angular, SQL Server, Docker, Kubernetes";
             Experience = "3 Years as Software Engineer";
+        }
+
+        public void SetObjective(string objective)
+        {
+            Objective = objective;
         }
 
         public IResumePrototype Clone()
@@ -84,20 +95,46 @@ namespace PrototypePattern.CVTemplate.Solution
         }
     }
 
+    // ==============================================================
+    // ৩. Client (JobApplicant)
+    // ==============================================================
+    public class JobApplicant
+    {
+        private IResumePrototype _masterResume;
+
+        public JobApplicant(IResumePrototype masterResume)
+        {
+            _masterResume = masterResume;
+        }
+
+        public IResumePrototype ApplyForJob(string objective)
+        {
+            var clone = _masterResume.Clone();
+            clone.SetObjective(objective);
+            return clone;
+        }
+    }
+
+    // ==============================================================
+    // ৪. Main Class (SolutionRunner)
+    // ==============================================================
     public class SolutionRunner
     {
         public static void Run()
         {
-            Console.WriteLine("\n=== ✅ SOLUTION RUN: মাস্টার CV ক্লোন করে শুধু Objective চেঞ্জ করা ===");
+            Console.WriteLine("\n=== ✅ SOLUTION RUN: Prototype Pattern (Using 4 Components) ===");
             
+            // মাস্টার CV তৈরি
             var masterCV = new Resume();
 
-            var googleCV = (Resume)masterCV.Clone();
-            googleCV.Objective = "To work at Google";
+            // ক্যান্ডিডেটকে (ক্লায়েন্ট) মাস্টার CV দিয়ে দিলাম
+            var applicant = new JobApplicant(masterCV);
+
+            // শুধু Objective চেঞ্জ করে ক্লোন করা হচ্ছে
+            var googleCV = applicant.ApplyForJob("To work at Google");
             googleCV.Show();
 
-            var microsoftCV = (Resume)masterCV.Clone();
-            microsoftCV.Objective = "To work at Microsoft";
+            var microsoftCV = applicant.ApplyForJob("To work at Microsoft");
             microsoftCV.Show();
         }
     }

@@ -56,4 +56,25 @@ namespace BehavioralDesignPattern.Mediator.StockExchange
         
         public void ReceiveNotification(string message) => Console.WriteLine($"[{Name}] received: {message}");
     }
+
+    // ==========================================
+    // 5. Client (মেইন অ্যাপ্লিকেশন)
+    // ==========================================
+    class Program
+    {
+        static void Run()
+        {
+            Console.WriteLine("=== Mediator Pattern (Stock Exchange) ===\n");
+
+            IStockBroker broker = new NyseBroker();
+            
+            ITrader trader1 = new StockTrader(broker, "Bedata");
+            ITrader trader2 = new StockTrader(broker, "Alice");
+
+            broker.RegisterTrader(trader1);
+            broker.RegisterTrader(trader2);
+
+            trader1.Buy("AAPL", 100);
+        }
+    }
 }

@@ -65,4 +65,32 @@ namespace BehavioralDesignPattern.Mediator.ChatRoom
             Console.WriteLine($"  -> {Name} received from {senderName}: {message}");
         }
     }
+
+    // ==========================================
+    // 5. Client (মেইন অ্যাপ্লিকেশন)
+    // ==========================================
+    class Program
+    {
+        static void Run()
+        {
+            Console.WriteLine("=== Mediator Pattern (Chat Room) ===\n");
+
+            // ১. সার্ভার তৈরি
+            IChatServer server = new ChatRoomServer();
+
+            // ২. ইউজার তৈরি
+            IUser bedata = new ChatUser(server, "Bedata");
+            IUser alice = new ChatUser(server, "Alice");
+            IUser bob = new ChatUser(server, "Bob");
+
+            // ৩. সার্ভারে জয়েন করা
+            server.RegisterUser(bedata);
+            server.RegisterUser(alice);
+            server.RegisterUser(bob);
+
+            // ৪. চ্যাটিং
+            bedata.Send("Hi everyone!");
+            alice.Send("Hello Bedata!");
+        }
+    }
 }

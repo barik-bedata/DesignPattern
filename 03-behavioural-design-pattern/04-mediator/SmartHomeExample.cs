@@ -59,4 +59,26 @@ namespace BehavioralDesignPattern.Mediator.SmartHome
         public void TriggerEvent(string eventType) { }
         public void TurnOn() => Console.WriteLine("[AC] Air Conditioner is ON.");
     }
+
+    // ==========================================
+    // 5. Client (মেইন অ্যাপ্লিকেশন)
+    // ==========================================
+    class Program
+    {
+        static void Run()
+        {
+            Console.WriteLine("=== Mediator Pattern (Smart Home) ===\n");
+
+            HomeHub hub = new HomeHub();
+            
+            IDevice sensor = new MotionSensor(hub);
+            IDevice light = new SmartLight();
+            IDevice ac = new SmartAC();
+
+            hub.RegisterDevices(light, ac);
+
+            // সেন্সর ট্রিগার হলো, বাকি কাজ হাব করবে
+            sensor.TriggerEvent("MotionDetected");
+        }
+    }
 }

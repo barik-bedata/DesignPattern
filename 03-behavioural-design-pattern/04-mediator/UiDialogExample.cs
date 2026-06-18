@@ -68,4 +68,26 @@ namespace BehavioralDesignPattern.Mediator.UIDialog
         public void Disable() => IsEnabled = false;
         public void Changed() { }
     }
+
+    // ==========================================
+    // 5. Client (মেইন অ্যাপ্লিকেশন)
+    // ==========================================
+    class Program
+    {
+        static void Run()
+        {
+            Console.WriteLine("=== Mediator Pattern (UI Dialog) ===\n");
+
+            RegistrationForm form = new RegistrationForm();
+            
+            Checkbox terms = new Checkbox(form);
+            SubmitButton submit = new SubmitButton(form);
+
+            form.TermsCheckbox = terms;
+            form.RegisterButton = submit;
+
+            // ইউজার চেকবক্স ক্লিক করলো, ফর্ম কন্ট্রোলার সাবমিট বাটন এনাবল করে দেবে
+            terms.Toggle(); 
+        }
+    }
 }

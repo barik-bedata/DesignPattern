@@ -62,4 +62,26 @@ namespace BehavioralDesignPattern.Mediator.GameLobby
 
         public void ReceiveMessage(string message) => Console.WriteLine($"[{Name}] sees on screen: {message}");
     }
+
+    // ==========================================
+    // 5. Client (মেইন অ্যাপ্লিকেশন)
+    // ==========================================
+    class Program
+    {
+        static void Run()
+        {
+            Console.WriteLine("=== Mediator Pattern (Game Lobby) ===\n");
+
+            IGameLobby lobby = new MultiplayerLobby();
+            
+            IPlayer p1 = new Gamer(lobby, "Player1");
+            IPlayer p2 = new Gamer(lobby, "Player2");
+
+            lobby.RegisterPlayer(p1);
+            lobby.RegisterPlayer(p2);
+
+            p1.SetReady();
+            p2.SetReady(); // যখনই p2 রেডি হবে, লবি গেম স্টার্ট করে দেবে!
+        }
+    }
 }

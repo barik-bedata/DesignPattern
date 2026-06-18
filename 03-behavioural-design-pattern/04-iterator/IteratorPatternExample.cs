@@ -16,21 +16,29 @@ namespace BehavioralDesignPattern.Iterator
     }
 
     // ==========================================
-    // 3. Aggregate Interface (টিভির কালেকশনের নিয়ম)
+    // 3. Aggregate Interface (টিভির রিড-অনলি নিয়ম - For Iterator)
     // ==========================================
-    // এই ইন্টারফেস বলে দেয় যে কালেকশনের কাছে একটি মেথড থাকতে হবে যা Iterator (রিমোট) তৈরি করবে।
+    // এই ইন্টারফেসে AddChannel নেই। এটি শুধু Iterator এর জন্য। (ISP মানা হলো)
     public interface ITvChannelCollection
     {
         IChannelIterator CreateIterator();
-        void AddChannel(string channelName); // DIP মানার জন্য ইন্টারফেসে অ্যাড করা হলো
         int Count { get; }
         string GetChannel(int index);
     }
 
     // ==========================================
+    // 3.1 Manager Interface (চ্যানেল সেটআপের নিয়ম - For Client)
+    // ==========================================
+    // ক্লায়েন্ট এই ইন্টারফেস ব্যবহার করে চ্যানেল অ্যাড করবে। (DIP মানা হলো)
+    public interface IChannelManager : ITvChannelCollection
+    {
+        void AddChannel(string channelName);
+    }
+
+    // ==========================================
     // 4. Concrete Aggregate (আসল টিভি বা চ্যানেল লিস্ট)
     // ==========================================
-    public class TvChannelCollection : ITvChannelCollection
+    public class TvChannelCollection : IChannelManager
     {
         // ভেতরে List ব্যবহার করা হয়েছে, কিন্তু ক্লায়েন্ট এটা জানবে না
         private readonly List<string> _channels = new List<string>();
@@ -99,7 +107,8 @@ namespace BehavioralDesignPattern.Iterator
             Console.WriteLine("=== Iterator Pattern (TV Remote Control) ===\n");
 
             // ১. টিভি কেনা হলো এবং চ্যানেল অ্যাড করা হলো
-            ITvChannelCollection myTv = new TvChannelCollection(); // এখন ক্লায়েন্ট 100% ইন্টারফেসের ওপর ডিপেন্ডেন্ট (DIP)
+            // ক্লায়েন্ট IChannelManager ইন্টারফেস ব্যবহার করছে (DIP)
+            IChannelManager myTv = new TvChannelCollection();
             myTv.AddChannel("BTV");
             myTv.AddChannel("Somoy TV");
             myTv.AddChannel("Channel I");

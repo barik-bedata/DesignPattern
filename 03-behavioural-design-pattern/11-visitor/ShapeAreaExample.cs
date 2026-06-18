@@ -86,6 +86,13 @@ namespace BehavioralDesignPattern.Visitor.ShapeArea
     {
         public double TotalArea { get; private set; } = 0;
 
+        // Best Practice: Reset method to clear state before reusing the visitor
+        public void Reset()
+        {
+            TotalArea = 0;
+            Console.WriteLine("[Visitor] State Reset. Total Area is now 0.");
+        }
+
         public void Visit(Circle circle)
         {
             // Calculate area of circle using circle's actual property
@@ -120,24 +127,38 @@ namespace BehavioralDesignPattern.Visitor.ShapeArea
         {
             Console.WriteLine("=== Visitor Pattern (Shape Area Calculator) ===\n");
 
-            // Object Structure (List of Shapes)
-            List<IShape> shapes = new List<IShape>
+            // 1st Collection
+            List<IShape> shapesList1 = new List<IShape>
             {
-                new Circle(5),       // GFG code had this hardcoded in visitor, we fixed it!
-                new Square(4),
+                new Circle(5),
+                new Square(4)
+            };
+
+            // 2nd Collection
+            List<IShape> shapesList2 = new List<IShape>
+            {
                 new Triangle(3, 6)
             };
 
             // Create the Visitor
             AreaCalculatorVisitor areaCalculator = new AreaCalculatorVisitor();
 
-            // Iterate over structure and ask each element to accept the visitor
-            foreach (var shape in shapes)
+            Console.WriteLine("--- Processing List 1 ---");
+            foreach (var shape in shapesList1)
             {
                 shape.Accept(areaCalculator);
             }
+            Console.WriteLine($"Total Area for List 1: {areaCalculator.TotalArea:F2}\n");
 
-            Console.WriteLine($"\nTotal Area Calculated: {areaCalculator.TotalArea:F2}");
+            Console.WriteLine("--- Processing List 2 (Using Reset) ---");
+            // BEST PRACTICE: Reset state before reusing the visitor on a new collection!
+            areaCalculator.Reset(); 
+            
+            foreach (var shape in shapesList2)
+            {
+                shape.Accept(areaCalculator);
+            }
+            Console.WriteLine($"Total Area for List 2: {areaCalculator.TotalArea:F2}");
         }
     }
 }

@@ -83,6 +83,11 @@ namespace BehavioralDesignPattern.Visitor.Supermarket
     {
         public double TotalTax { get; private set; } = 0;
 
+        public void Reset()
+        {
+            TotalTax = 0;
+        }
+
         public void Visit(Laptop laptop)
         {
             // ল্যাপটপে ১৫% ট্যাক্স
@@ -110,6 +115,11 @@ namespace BehavioralDesignPattern.Visitor.Supermarket
     public class DiscountVisitor : IShoppingVisitor
     {
         public double TotalDiscount { get; private set; } = 0;
+
+        public void Reset()
+        {
+            TotalDiscount = 0;
+        }
 
         public void Visit(Laptop laptop)
         {

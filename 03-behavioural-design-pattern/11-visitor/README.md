@@ -52,3 +52,9 @@ We have implemented 4 completely SOLID-compliant examples in C# to demonstrate t
    - **Visitors**: `BonusCalculatorVisitor`, `MedicalAllowanceVisitor`.
    - **Purpose**: Calculates annual bonuses and assigns medical coverage tiers based on employee roles.
 
+## ⚠️ Visitor Pattern-এ State Management (`+=` vs `=`)
+Visitor-এর ভেতরে ডেটা কীভাবে রাখা হচ্ছে, তার ওপর আপনার অ্যাপ্লিকেশনের রেজাল্ট পুরোপুরি নির্ভর করে:
+- **Accumulating State (`+=`)**: আমাদের `ShapeAreaExample`-এ আমরা `TotalArea += area` ব্যবহার করেছি। এর ফলে একটি লিস্টের সবগুলো শেপের এরিয়া একসাথে যোগ হয়ে **Total Sum** বের হয়েছে।
+- **Single Assignment (`=`)**: যদি আমরা `+=` না করে সরাসরি `Area = area` লিখতাম, তবে এটি আগের ডেটা মুছে ফেলতো এবং শুধু সর্বশেষ যে শেপটি ভিজিট করা হয়েছে, তার এরিয়া দেখাতো (অর্থাৎ **Single Area**)। আপনার রিকোয়ারমেন্ট যদি হয় একেকটি শেপের আলাদা আলাদা এরিয়া বের করা (লিস্টের সামেশন নয়), তবে `+=` এর বদলে শুধু `=` ব্যবহার করতে হবে।
+
+

@@ -98,6 +98,10 @@ namespace BehavioralDesignPattern.Visitor.ShapeArea
             // Calculate area of circle using circle's actual property
             double area = Math.PI * Math.Pow(circle.Radius, 2);
             Console.WriteLine($"[Visitor] Calculated Area for Circle: {area:F2}");
+            
+            // Note: If we used `TotalArea = area` instead of `+=`, it would override the previous value
+            // and we would only get the single area of the last visited shape.
+            // Since we want the sum of all shapes in the list, we use `+=`.
             TotalArea += area;
         }
 

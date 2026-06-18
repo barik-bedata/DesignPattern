@@ -1,10 +1,39 @@
 # Interpreter Design Pattern
 
-## 📖 Overview
-Given a language, define a representation for its grammar along with an interpreter that uses the representation to interpret sentences in the language.
+## 📖 Overview (ওভারভিউ)
+Interpreter Pattern হলো একটি Behavioral Design Pattern, যা কোনো নির্দিষ্ট ভাষা বা গ্রামারের (Grammar) নিয়ম তৈরি করে এবং একটি Interpreter-এর মাধ্যমে সেই ভাষা বা রুলসগুলোকে এক্সিকিউট (অনুবাদ) করে। 
 
-## 🤔 When to use it?
-*(Add specific use cases here when you study this pattern)*
+সহজ ভাষায়: আপনার সিস্টেমে যদি এমন কোনো লজিক থাকে, যা ইউজার একটি স্ট্রিং আকারে দেয় (যেমন: `"A + B - C"` বা `"Degree AND Experience"`) এবং আপনাকে সেই স্ট্রিং পার্স করে রেজাল্ট বের করতে হয়, তবে এই প্যাটার্নটি ব্যবহার করা হয়।
 
-## 💻 Example
-*(Code examples will go here)*
+## 💻 কম্পোনেন্টগুলো (৬টি অংশ)
+
+অরিজিনাল Gang of Four (GoF) বইতে ৫টি কম্পোনেন্ট থাকলেও, প্র্যাকটিক্যাল দুনিয়ায় (এবং আধুনিক সোর্সগুলোতে) ৬টি কম্পোনেন্ট ব্যবহার করা হয়, যেন ক্লায়েন্টের কাজ সহজ হয়:
+
+১. **AbstractExpression:** সবার কমন ইন্টারফেস, যার ভেতরে `Interpret()` মেথড থাকে।
+২. **TerminalExpression:** বাক্যের সেই অংশ যাকে আর ছোট করা যায় না (যেমন সংখ্যা `5` বা ভেরিয়েবল `X`)। এরা কোনো সাব-এক্সপ্রেশনের ওপর নির্ভর করে না।
+৩. **NonterminalExpression:** এরা হলো অপারেটর (যেমন `+`, `-`, `AND`, `OR`)। এদের কাজ করতে হলে চাইল্ড এক্সপ্রেশনের (ডান এবং বাম দিকের) সাহায্য নিতে হয়।
+৪. **Context:** এখানে গ্লোবাল ডেটা বা স্টেট স্টোর করা থাকে। যেমন ভেরিয়েবল `X` এর মান যে `10`, সেটা এই Context এর ভেতরে ডিকশনারি আকারে সেভ করা থাকে।
+৫. **Interpreter / Parser (The 6th Component!):** এর কাজ হলো ইউজারের দেওয়া স্ট্রিং পার্স করে একটি Abstract Syntax Tree (AST) বা গাছ তৈরি করা। এটি না থাকলে ক্লায়েন্টকে নিজের হাতে পুরো গাছটি অ্যাসেম্বল করতে হতো, যা খুবই কঠিন কাজ।
+৬. **Client:** যে `Context`-এ ডেটা দেয় এবং `Interpreter` কে কল করে পুরো কাজটির রেজাল্ট বের করে আনে।
+
+## 🛡️ SOLID Principles Adherence
+আমাদের তৈরি করা কোডটি কীভাবে SOLID মেনে চলে:
+- **SRP:** `NumberExpression` শুধু ভ্যালু বের করে, `AddExpression` শুধু যোগ করে, আর `MathInterpreter` শুধু পার্স করে। সবার দায়িত্ব আলাদা।
+- **OCP:** আগামীকাল আপনি চাইলে `MultiplyExpression` বা `DivideExpression` যুক্ত করতে পারেন, এর জন্য আগের কোনো ক্লাস বা `IExpression` ইন্টারফেসে হাত দিতে হবে অ্যাক।
+- **DIP:** `AddExpression` নির্ভর করে `IExpression` ইন্টারফেসের ওপর, কোনো কনক্রিট ক্লাসের ওপর নয়।
+
+## 🤔 রিয়েল-ওয়ার্ল্ড ইউজ কেস (কোথায় ব্যবহার হয়?)
+
+১. **Jira Query Language (JQL) বা SQL Parsing:** 
+   সফটওয়্যার ইঞ্জিনিয়াররা জিরাতে বাগ খোঁজার সময় প্রায়ই লেখেন: `"assignee = currentUser() AND status = Done"`. জিরার ব্যাকএন্ডে একটি Interpreter বসে আছে, যে এই স্ট্রিংটিকে পড়ে, ভেঙে Abstract Syntax Tree (AST) বানায় এবং ডাটাবেজ থেকে রেজাল্ট এনে দেয়। একইভাবে ডাটাবেজের `SELECT * FROM Users WHERE Age > 18` এসকিউএল কোয়েরিগুলোও ভেতরে ভেতরে এভাবেই ইভ্যালুয়েট হয়।
+
+২. **Custom Rule Engine (যেমন: ই-কমার্স ডিসকাউন্ট):**
+   ধরুন, অ্যাডমিন প্যানেলে ক্লায়েন্ট টাইপ করলো: `"CartTotal > 5000 AND IsVipCustomer == True"`. সিস্টেমে এই স্ট্রিংটি পার্স করে Interpreter প্যাটার্ন ডিসাইড করবে যে কাস্টমারকে ১০% ডিসকাউন্ট দেওয়া হবে কি না। এর জন্য বারবার সি-শার্প কোড আপডেট করার প্রয়োজন হয় না।
+
+৩. **Microsoft Excel Formulas:**
+   এক্সেলে যখন আপনি লেখেন `=SUM(A1:A5) + B2`, তখন এক্সেল এই ফর্মুলাটিকে Interpreter Pattern ব্যবহার করে পার্স করে। এখানে `A1`, `B2` হলো TerminalExpression (যাদের মান সে Context থেকে পড়ে নেয়), আর `+` বা `SUM` হলো NonterminalExpression।
+
+৪. **Regular Expressions (Regex):**
+   সি-শার্প বা জাভাতে ইমেইল ভ্যালিডেট করার জন্য যে প্যাটার্ন (`^[a-z]+@[a-z]+\.[a-z]+$`) লেখা হয়, Regex Engine সেটিকে সরাসরি বুঝতে পারে না। সে এই স্ট্রিংটাকে ভেঙে একটি AST তৈরি করে (Interpreter Pattern দিয়ে) এবং ইনপুটের সাথে মিলিয়ে দেখে।
+
+*(নোট: খুব কমপ্লেক্স গ্রামার বা ল্যাঙ্গুয়েজের জন্য এটি ব্যবহার করা উচিত নয়, কারণ এতে প্রচুর ক্লাস তৈরি হয়ে যায় এবং সিস্টেম স্লো হয়ে পড়ে। সেক্ষেত্রে থার্ড-পার্টি পার্সার বা কম্পাইলার জেনারেটর ব্যবহার করা ভালো।)*

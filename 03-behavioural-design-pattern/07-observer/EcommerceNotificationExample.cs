@@ -4,85 +4,108 @@ using System.Collections.Generic;
 namespace BehavioralDesignPattern.Observer.Ecommerce
 {
     // ==========================================
-    // 1. Observer Interface (যারা নোটিফিকেশন পাবে)
+    // 1. Observer Interface (মডার্ন নেমিং)
     // ==========================================
-    // Subject শুধু এই ইন্টারফেসটিকে চেনে।
-    public interface IObserver
+    public interface IStockObserver
     {
-        void Update(string message);
+        void OnStockAvailable(string productName);
     }
 
     // ==========================================
-    // 2. Subject Interface (যে নোটিফিকেশন পাঠাবে)
+    // 2. Subject Interface 
     // ==========================================
-    public interface ISubject
+    public interface IStockSubject
     {
-        void Attach(IObserver observer); // সাবস্ক্রাইব করা
-        void Detach(IObserver observer); // আনসাবস্ক্রাইব করা
-        void NotifyObservers(string message);
+        void Subscribe(IStockObserver observer);
+        void Unsubscribe(IStockObserver observer);
+        void NotifySubscribers();
     }
 
     // ==========================================
-    // 3. Concrete Subject (প্রোডাক্ট স্টকে আসলে নোটিফাই করবে)
+    // 3. Concrete Subject
     // ==========================================
-    public class Product : ISubject
+    public class Product : IStockSubject
     {
-        private readonly List<IObserver> _observers = new List<IObserver>();
-        private string _name;
-        private bool _inStock;
+        private readonly List<IStockObserver> _subscribers = new List<IStockObserver>();
+        
+        public string ProductName { get; }
+        public bool IsInStock { get; private set; }
 
-        public Product(string name)
+        public Product(string productName)
         {
-            _name = name;
-            _inStock = false;
+            ProductName = productName;
+            IsInStock = false;
         }
 
-        public void Attach(IObserver observer) => _observers.Add(observer);
-        public void Detach(IObserver observer) => _observers.Remove(observer);
+        public void Subscribe(IStockObserver observer) => _subscribers.Add(observer);
+        public void Unsubscribe(IStockObserver observer) => _subscribers.Remove(observer);
 
-        public void NotifyObservers(string message)
+        public void NotifySubscribers()
         {
-            Console.WriteLine($"\n[Product System] Notifying {_observers.Count} observers for '{_name}'...");
-            foreach (var observer in _observers)
+            Console.WriteLine($"\n[System] Notifying {_subscribers.Count} subscribers that '{ProductName}' is in stock...");
+            foreach (var subscriber in _subscribers)
             {
-                observer.Update(message); // DIP এর কারণে লুজ কাপলিং
+                subscriber.OnStockAvailable(ProductName);
             }
         }
 
-        public void SetInStock(bool inStock)
+        public void UpdateStockStatus(bool inStock)
         {
-            _inStock = inStock;
-            if (_inStock)
+            IsInStock = inStock;
+            if (IsInStock)
             {
-                NotifyObservers($"Good News! {_name} is now Back in Stock!");
+                NotifySubscribers();
             }
         }
     }
 
     // ==========================================
-    // 4. Concrete Observers (Email, SMS, Mobile)
+    // 4. Concrete Observers (Notification Services)
     // ==========================================
-    // নতুন কোনো Notifier (যেমন WhatsApp) অ্যাড করতে হলে শুধু নতুন ক্লাস বানাতে হবে, Product ক্লাসে কোনো হাত দিতে হবে না! (OCP)
     
-    public class EmailNotifier : IObserver
+    public class EmailNotificationService : IStockObserver
     {
-        private string _emailAddress;
-        public EmailNotifier(string email) => _emailAddress = email;
-        public void Update(string message) => Console.WriteLine($"[Email to {_emailAddress}] {message}");
+        private readonly string _customerEmail;
+        
+        public EmailNotificationService(string customerEmail)
+        {
+            _customerEmail = customerEmail;
+        }
+
+        public void OnStockAvailable(string productName)
+        {
+            Console.WriteLine($"[Email Alert to {_customerEmail}] Good news! {productName} is back in stock.");
+        }
     }
 
-    public class SmsNotifier : IObserver
+    public class SmsNotificationService : IStockObserver
     {
-        private string _phoneNumber;
-        public SmsNotifier(string phone) => _phoneNumber = phone;
-        public void Update(string message) => Console.WriteLine($"[SMS to {_phoneNumber}] {message}");
+        private readonly string _customerPhoneNumber;
+
+        public SmsNotificationService(string customerPhoneNumber)
+        {
+            _customerPhoneNumber = customerPhoneNumber;
+        }
+
+        public void OnStockAvailable(string productName)
+        {
+            Console.WriteLine($"[SMS Alert to {_customerPhoneNumber}] {productName} is now available to order.");
+        }
     }
 
-    public class MobileAppNotifier : IObserver
+    public class PushNotificationService : IStockObserver
     {
-        private string _username;
-        public MobileAppNotifier(string user) => _username = user;
-        public void Update(string message) => Console.WriteLine($"[Push Notification to {_username}'s Phone] {message}");
+        private readonly string _deviceId;
+
+        public PushNotificationService(string deviceId)
+        {
+            _deviceId = deviceId;
+        }
+
+        public void OnStockAvailable(string productName)
+        {
+            Console.WriteLine($"[App Push to Device {_deviceId}] Hurry! {productName} is restocked.");
+        }
     }
 
     // ==========================================
@@ -94,20 +117,17 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
         {
             Console.WriteLine("=== Observer Pattern (E-Commerce Notifications) ===\n");
 
-            // ১. প্রোডাক্ট তৈরি হলো (Subject)
             Product iphone = new Product("iPhone 16 Pro Max");
 
-            // ২. বিভিন্ন ইউজার বিভিন্ন মাধ্যমে সাবস্ক্রাইব করলো (Observers)
-            IObserver emailUser = new EmailNotifier("bedata@example.com");
-            IObserver smsUser = new SmsNotifier("+8801700000000");
-            IObserver appUser = new MobileAppNotifier("bedata_app");
+            IStockObserver emailSubscriber = new EmailNotificationService("bedata@example.com");
+            IStockObserver smsSubscriber = new SmsNotificationService("+8801700000000");
+            IStockObserver pushSubscriber = new PushNotificationService("Device_X193_Android");
 
-            iphone.Attach(emailUser);
-            iphone.Attach(smsUser);
-            iphone.Attach(appUser);
+            iphone.Subscribe(emailSubscriber);
+            iphone.Subscribe(smsSubscriber);
+            iphone.Subscribe(pushSubscriber);
 
-            // ৩. প্রোডাক্ট স্টকে আসলো, সাথে সাথে সবাইকে অটোমেটিক নোটিফিকেশন চলে যাবে!
-            iphone.SetInStock(true);
+            iphone.UpdateStockStatus(true);
         }
     }
 }

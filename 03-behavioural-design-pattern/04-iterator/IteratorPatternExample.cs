@@ -22,6 +22,7 @@ namespace BehavioralDesignPattern.Iterator
     public interface ITvChannelCollection
     {
         IChannelIterator CreateIterator();
+        void AddChannel(string channelName); // DIP মানার জন্য ইন্টারফেসে অ্যাড করা হলো
         int Count { get; }
         string GetChannel(int index);
     }
@@ -98,7 +99,7 @@ namespace BehavioralDesignPattern.Iterator
             Console.WriteLine("=== Iterator Pattern (TV Remote Control) ===\n");
 
             // ১. টিভি কেনা হলো এবং চ্যানেল অ্যাড করা হলো
-            TvChannelCollection myTv = new TvChannelCollection();
+            ITvChannelCollection myTv = new TvChannelCollection(); // এখন ক্লায়েন্ট 100% ইন্টারফেসের ওপর ডিপেন্ডেন্ট (DIP)
             myTv.AddChannel("BTV");
             myTv.AddChannel("Somoy TV");
             myTv.AddChannel("Channel I");

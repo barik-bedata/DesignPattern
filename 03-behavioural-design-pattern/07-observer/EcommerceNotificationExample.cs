@@ -12,19 +12,26 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
     }
 
     // ==========================================
-    // 2. Subject Interface 
+    // 2. Subject Interface (For Observers)
     // ==========================================
     public interface IStockSubject
     {
         void Subscribe(IStockObserver observer);
         void Unsubscribe(IStockObserver observer);
-        void NotifySubscribers();
+    }
+
+    // ==========================================
+    // 2.1 Manager Interface (For Admin/Client)
+    // ==========================================
+    public interface IProductManager : IStockSubject
+    {
+        void UpdateStockStatus(bool inStock);
     }
 
     // ==========================================
     // 3. Concrete Subject
     // ==========================================
-    public class Product : IStockSubject
+    public class Product : IProductManager
     {
         private readonly List<IStockObserver> _subscribers = new List<IStockObserver>();
         
@@ -40,7 +47,7 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
         public void Subscribe(IStockObserver observer) => _subscribers.Add(observer);
         public void Unsubscribe(IStockObserver observer) => _subscribers.Remove(observer);
 
-        public void NotifySubscribers()
+        private void NotifySubscribers()
         {
             Console.WriteLine($"\n[System] Notifying {_subscribers.Count} subscribers that '{ProductName}' is in stock...");
             foreach (var subscriber in _subscribers)
@@ -117,7 +124,8 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
         {
             Console.WriteLine("=== Observer Pattern (E-Commerce Notifications) ===\n");
 
-            Product iphone = new Product("iPhone 16 Pro Max");
+            // DIP মানার জন্য কনক্রিট ক্লাসের বদলে IProductManager ইন্টারফেস ব্যবহার করা হলো
+            IProductManager iphone = new Product("iPhone 16 Pro Max");
 
             IStockObserver emailSubscriber = new EmailNotificationService("bedata@example.com");
             IStockObserver smsSubscriber = new SmsNotificationService("+8801700000000");

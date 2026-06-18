@@ -1,10 +1,36 @@
 # Memento Design Pattern
 
-## 📖 Overview
-Lets you save and restore the previous state of an object without revealing the details of its implementation.
+## 📖 Overview (ওভারভিউ)
+**Memento Pattern** হলো একটি Behavioral Design Pattern যা কোনো অবজেক্টের বর্তমান অবস্থা বা স্টেট (State) সেভ করে রাখতে দেয়, যাতে ভবিষ্যতে কোনো কারণে ভুল হলে বা দরকার হলে **Undo/Restore** করে আগের অবস্থায় ফিরে যাওয়া যায়।
 
-## 🤔 When to use it?
-*(Add specific use cases here when you study this pattern)*
+সবচেয়ে বড় কথা হলো, এটি এনক্যাপসুলেশন (Encapsulation) না ভেঙেই কাজ করে। অর্থাৎ, বাইরের কোনো অবজেক্ট সেভ করা ডেটা দেখতে বা চেঞ্জ করতে পারে না।
 
-## 💻 Example
-*(Code examples will go here)*
+### 🎮 বাস্তব জীবনের উদাহরণ (Video Game Checkpoints)
+যখন আপনি কোনো গেম খেলেন, তখন বসের সাথে ফাইট করার আগে গেমটি সেভ করে রাখেন। যদি ফাইটে আপনি মারা যান, তবে আপনাকে প্রথম থেকে গেম শুরু করতে হয়বিধা হয় না। আপনি শুধু "Saved Game" ফাইলটি লোড করেন এবং ঠিক যে অবস্থায় সেভ করেছিলেন, সেখানে ফিরে যান। 
+
+এখানে:
+- **গেম প্লেয়ার** হলো `Originator` (যার ডেটা সেভ করা হচ্ছে)।
+- **Saved Game ফাইল** হলো `Memento` (লক করা মেমোরি কার্ড)।
+- **Save Manager (System)** হলো `Caretaker` (যে আপনার সেভ করা ফাইলগুলো যত্নে রেখে দেয়)।
+
+## 💻 কম্পোনেন্টগুলো (৩টি অংশ)
+
+১. **Originator (`IOriginator`, `GamePlayer`):** 
+এটি হলো আসল অবজেক্ট যার স্টেট আমরা সেভ করতে চাই। এটি নিজের স্টেটের স্ন্যাপশট নিয়ে একটি Memento তৈরি করে (`Save()`) এবং পুরনো Memento থেকে নিজেকে রিস্টোর করে (`Restore()`)।
+
+২. **Memento (`IMemento`, `GameMemento`):** 
+এটি হলো স্ন্যাপশট। এটি শুধু ডেটা ধরে রাখে। এই অবজেক্টের কোনো মেথড দিয়ে ডেটা চেঞ্জ করা যায় না (Read-only)।
+
+৩. **Caretaker (`GameSaveManager`):** 
+এটি `Originator` কে সেভ হতে বলে এবং সেভ করা `Memento` গুলো একটি লিস্ট বা স্ট্যাক (Stack) এ জমিয়ে রাখে। এটি কখনো `Memento` এর ভেতরের ডেটা মডিফাই করে না।
+
+## 🛡️ SOLID Principles Adherence (DIP & ISP)
+
+- **DIP:** `GameSaveManager` (Caretaker) সরাসরি `GamePlayer` (Concrete Class) এর ওপর নির্ভর করে না। এটি `IOriginator` ইন্টারফেসের ওপর নির্ভর করে। 
+- **Encapsulation:** `IMemento` ইন্টারফেসে কোনো `SetState()` মেথড নেই। তাই Caretaker চাইলেও সেভ করা ফাইলে কোনো পরিবর্তন আনতে পারবে না!
+
+## 🤔 কখন ব্যবহার করবেন? (Real World Use Cases)
+
+১. **Text Editors (Undo/Redo):** MS Word বা VS Code এ Ctrl+Z চাপলে আগের লেখা ফিরে আসে।
+২. **Database Transactions:** কোনো ট্রানজেকশন ফেইল করলে Rollback করে ডাটাবেজকে আগের অবস্থায় নিয়ে যাওয়া।
+৩. **Browser History:** ব্রাউজারে ব্যাক বাটনে ক্লিক করলে আগের পেইজে ফিরে যাওয়া।

@@ -4,28 +4,28 @@ using System.Collections.Generic;
 namespace BehavioralDesignPattern.Observer.Ecommerce
 {
     // ==========================================
-    // 1. Observer Interface (মডার্ন নেমিং)
+    // 1. Observer Interface
     // ==========================================
-    public interface INotificationService
+    public interface IObserver
     {
-        void SendNotification(string productName);
+        void Update(string productName);
     }
 
     // ==========================================
     // 2. Subject Interface (For Observers)
     // ==========================================
-    public interface IStockSubject
+    public interface ISubject
     {
-        void Subscribe(INotificationService service);
-        void Unsubscribe(INotificationService service);
+        void AddObserver(IObserver observer);
+        void RemoveObserver(IObserver observer);
     }
 
     // ==========================================
     // 2.1 Manager Interface (For Admin/Client)
     // ==========================================
-    public interface IProductManager : IStockSubject
+    public interface IProductManager : ISubject
     {
-        void UpdateStockStatus(bool inStock);
+        void Restock();
     }
 
     // ==========================================
@@ -33,36 +33,31 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
     // ==========================================
     public class Product : IProductManager
     {
-        private readonly List<INotificationService> _notificationServices = new List<INotificationService>();
+        private readonly List<IObserver> _observers = new List<IObserver>();
         
         public string ProductName { get; }
-        public bool IsInStock { get; private set; }
 
         public Product(string productName)
         {
             ProductName = productName;
-            IsInStock = false;
         }
 
-        public void Subscribe(INotificationService service) => _notificationServices.Add(service);
-        public void Unsubscribe(INotificationService service) => _notificationServices.Remove(service);
+        public void AddObserver(IObserver observer) => _observers.Add(observer);
+        public void RemoveObserver(IObserver observer) => _observers.Remove(observer);
 
-        private void NotifySubscribers()
+        private void NotifyObservers()
         {
-            Console.WriteLine($"\n[System] Triggering {_notificationServices.Count} notification services for '{ProductName}'...");
-            foreach (var service in _notificationServices)
+            Console.WriteLine($"\n[System] Triggering {_observers.Count} observers for '{ProductName}'...");
+            foreach (var observer in _observers)
             {
-                service.SendNotification(ProductName);
+                observer.Update(ProductName);
             }
         }
 
-        public void UpdateStockStatus(bool inStock)
+        public void Restock()
         {
-            IsInStock = inStock;
-            if (IsInStock)
-            {
-                NotifySubscribers();
-            }
+            // প্রোডাক্ট স্টকে এড করার অন্যান্য বিজনেস লজিক এখানে থাকতে পারে...
+            NotifyObservers();
         }
     }
 
@@ -70,7 +65,7 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
     // 4. Concrete Observers (Notification Services)
     // ==========================================
     
-    public class EmailNotificationService : INotificationService
+    public class EmailNotificationService : IObserver
     {
         private readonly string _customerEmail;
         
@@ -79,13 +74,13 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
             _customerEmail = customerEmail;
         }
 
-        public void SendNotification(string productName)
+        public void Update(string productName)
         {
             Console.WriteLine($"[Email Alert to {_customerEmail}] Good news! {productName} is back in stock.");
         }
     }
 
-    public class SmsNotificationService : INotificationService
+    public class SmsNotificationService : IObserver
     {
         private readonly string _customerPhoneNumber;
 
@@ -94,13 +89,13 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
             _customerPhoneNumber = customerPhoneNumber;
         }
 
-        public void SendNotification(string productName)
+        public void Update(string productName)
         {
             Console.WriteLine($"[SMS Alert to {_customerPhoneNumber}] {productName} is now available to order.");
         }
     }
 
-    public class PushNotificationService : INotificationService
+    public class PushNotificationService : IObserver
     {
         private readonly string _deviceId;
 
@@ -109,7 +104,7 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
             _deviceId = deviceId;
         }
 
-        public void SendNotification(string productName)
+        public void Update(string productName)
         {
             Console.WriteLine($"[App Push to Device {_deviceId}] Hurry! {productName} is restocked.");
         }
@@ -127,15 +122,16 @@ namespace BehavioralDesignPattern.Observer.Ecommerce
             // DIP মানার জন্য কনক্রিট ক্লাসের বদলে IProductManager ইন্টারফেস ব্যবহার করা হলো
             IProductManager iphone = new Product("iPhone 16 Pro Max");
 
-            INotificationService emailService = new EmailNotificationService("bedata@example.com");
-            INotificationService smsService = new SmsNotificationService("+8801700000000");
-            INotificationService pushService = new PushNotificationService("Device_X193_Android");
+            IObserver emailService = new EmailNotificationService("bedata@example.com");
+            IObserver smsService = new SmsNotificationService("+8801700000000");
+            IObserver pushService = new PushNotificationService("Device_X193_Android");
 
-            iphone.Subscribe(emailService);
-            iphone.Subscribe(smsService);
-            iphone.Subscribe(pushService);
+            iphone.AddObserver(emailService);
+            iphone.AddObserver(smsService);
+            iphone.AddObserver(pushService);
 
-            iphone.UpdateStockStatus(true);
+            // প্রোডাক্ট রিস্টক করা হলো (অটোমেটিক্যালি সবাইকে জানিয়ে দেবে)
+            iphone.Restock();
         }
     }
 }

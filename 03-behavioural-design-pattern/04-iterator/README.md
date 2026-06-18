@@ -21,6 +21,17 @@
 - `TvRemoteControl` (Iterator) সরাসরি `TvChannelCollection` (Concrete Class) এর ওপর নির্ভর করে না। এটি `ITvChannelCollection` (Interface) এর ওপর নির্ভর করে।
 - Client (`Program`) সরাসরি `TvRemoteControl` কে কল করে না। সে `IChannelIterator` ইন্টারফেস দিয়ে কাজ করে।
 
+## 🤔 আরও একটি রিয়েল-ওয়ার্ল্ড উদাহরণ (Pagination)
+
+আমাদের ফোল্ডারে **[NewsFeedIteratorExample.cs](file:///Users/bedata/Desktop/Learning/DesignPattern/03-behavioural-design-pattern/04-iterator/NewsFeedIteratorExample.cs)** নামে একটি চমৎকার ফাইল আছে। 
+
+ধরুন, একটি সোশ্যাল মিডিয়া ফিডে ১ লক্ষ পোস্ট আছে। সবগুলো পোস্ট একবারে লোড করলে অ্যাপ ক্র্যাশ করবে। তাই আমরা `GetPostsFromApi(pageNumber, pageSize)` ব্যবহার করে একসাথে ৫টি বা ১০টি করে পোস্ট আনি (যাকে Pagination বলে)।
+
+**Iterator Pattern এর ম্যাজিক:**
+ক্লায়েন্ট (যেমন: মোবাইল অ্যাপের UI) এই পেজিনেশন সম্পর্কে কিছুই জানে না! ক্লায়েন্ট শুধু `while(scroller.HasNext())` ব্যবহার করে স্ক্রল করে যায়। ব্যাকগ্রাউন্ডে `PaginationIterator` একা একাই হিসেব রাখে যে কখন কারেন্ট পেজের পোস্ট শেষ হলো এবং কখন চুপিচুপি ডাটাবেজ থেকে পরের পেজের পোস্টগুলো নিয়ে আসতে হবে!
+
+অর্থাৎ, Iterator Pattern ক্লায়েন্টের কাছ থেকে অত্যন্ত জটিল Data Fetching Logic কে পুরোপুরি লুকিয়ে রাখে (Abstraction)।
+
 ## 🤔 কখন ব্যবহার করবেন? (Real World Use Cases)
 
 ১. **C# `foreach` loop:** সি-শার্পের `IEnumerable` এবং `IEnumerator` হলো Iterator প্যাটার্নের সবচেয়ে বড় উদাহরণ। আপনি যখন `foreach` লুপ চালান, তখন এটি ব্যাকগ্রাউন্ডে Iterator তৈরি করে কাজ করে।

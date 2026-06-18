@@ -28,3 +28,27 @@ The **Visitor Design Pattern** is a behavioral design pattern that allows you to
 The GeeksforGeeks article had a severe SOLID violation. It hardcoded the properties of the shapes (like `radiusOfCircle = 5`) inside the `AreaCalculator` Visitor class! 
 **Why is this wrong?** Because a Circle's radius belongs to the Circle, not the Visitor! If we have two different circles with radii 5 and 10, the GFG code would fail entirely. 
 In our `ShapeAreaExample.cs`, we have fixed this. The Shapes hold their own properties, and the Visitor accesses them properly.
+
+## 💻 4 Practical Examples Included
+We have implemented 4 completely SOLID-compliant examples in C# to demonstrate this pattern:
+
+1. **`ShapeAreaExample.cs`**
+   - **Elements**: `Circle`, `Square`, `Triangle`.
+   - **Visitor**: `AreaCalculatorVisitor`.
+   - **Purpose**: Calculates the area of different shapes without modifying the shape classes. Fixes the GFG hardcoding bug.
+
+2. **`SupermarketCheckoutExample.cs`**
+   - **Elements**: `Laptop`, `Fruit`, `Book`.
+   - **Visitors**: `TaxVisitor`, `DiscountVisitor`.
+   - **Purpose**: Calculates dynamic tax rates and discounts based on the type of product at checkout.
+
+3. **`DocumentExporterExample.cs`**
+   - **Elements**: `Paragraph`, `Image`, `Table`.
+   - **Visitors**: `HtmlExportVisitor`, `PdfExportVisitor`.
+   - **Purpose**: Converts an internal document structure into different formats (HTML, PDF) cleanly.
+
+4. **`OrganizationSalaryExample.cs`**
+   - **Elements**: `RegularEmployee`, `Manager`, `Director`.
+   - **Visitors**: `BonusCalculatorVisitor`, `MedicalAllowanceVisitor`.
+   - **Purpose**: Calculates annual bonuses and assigns medical coverage tiers based on employee roles.
+

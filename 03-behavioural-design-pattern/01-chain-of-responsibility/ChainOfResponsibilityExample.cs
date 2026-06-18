@@ -3,9 +3,24 @@ using System;
 namespace BehavioralDesignPattern.ChainOfResponsibility
 {
     // ==========================================
-    // 1. Request Object
+    // 1. Request Interface & DTO (Data Object)
     // ==========================================
-    public class LoanRequest
+    
+    /* 
+     * NOTE: For simple applications, creating an interface for a simple DTO 
+     * (Data Transfer Object) is considered "Over-engineering" and it is usually 
+     * better to avoid it. However, for large Enterprise applications where we might 
+     * have completely different types of requests (e.g., HomeLoanRequest, CarLoanRequest) 
+     * that share common behaviors, using an interface makes the system highly scalable.
+     */
+    public interface ILoanRequest
+    {
+        string CustomerName { get; }
+        int Amount { get; }
+        string Purpose { get; }
+    }
+
+    public class LoanRequest : ILoanRequest
     {
         public string CustomerName { get; set; }
         public int Amount { get; set; }
@@ -25,15 +40,12 @@ namespace BehavioralDesignPattern.ChainOfResponsibility
     public interface ILoanApprover
     {
         void SetNext(ILoanApprover nextApprover);
-        void ProcessLoan(LoanRequest request);
+        void ProcessLoan(ILoanRequest request); // এখন ইন্টারফেস রিসিভ করছে!
     }
 
     // ==========================================
     // 3. Base Handler — এখন 100% DRY & SOLID
     // ==========================================
-    // এই Template Method-এ ProcessLoan একবারই লেখা থাকে — 
-    // subclass শুধু ঠিক করবে "সে হ্যান্ডেল করতে পারবে কি না (CanHandle)" 
-    // এবং "হ্যান্ডেল করলে কী হবে (HandleLoan)"।
     public abstract class BaseLoanApprover : ILoanApprover
     {
         protected ILoanApprover _nextApprover;
@@ -50,7 +62,7 @@ namespace BehavioralDesignPattern.ChainOfResponsibility
         }
 
         // Chain traversal logic — এখন একটাই জায়গায় আছে (Template Method)।
-        public void ProcessLoan(LoanRequest request)
+        public void ProcessLoan(ILoanRequest request)
         {
             // ১. আমি কি এটা হ্যান্ডেল করতে পারবো? (ডিসিশন নেবে সাব-ক্লাস)
             if (CanHandle(request))
@@ -71,9 +83,9 @@ namespace BehavioralDesignPattern.ChainOfResponsibility
             Console.WriteLine($"[{_roleName}] REJECTED. No approver in the chain can authorize {request.Amount} BDT for {request.CustomerName}.");
         }
 
-        // সাব-ক্লাসকে এই দুটো মেথড ইমপ্লিমেন্ট করতে হবে
-        protected abstract bool CanHandle(LoanRequest request);
-        protected abstract void HandleLoan(LoanRequest request);
+        // সাব-ক্লাসকে এই দুটো মেথড ইমপ্লিমেন্ট করতে হবে (প্যারামিটার হিসেবে ইন্টারফেস)
+        protected abstract bool CanHandle(ILoanRequest request);
+        protected abstract void HandleLoan(ILoanRequest request);
     }
 
     // ==========================================
@@ -89,12 +101,12 @@ namespace BehavioralDesignPattern.ChainOfResponsibility
             _approvalLimit = approvalLimit;
         }
 
-        protected override bool CanHandle(LoanRequest request)
+        protected override bool CanHandle(ILoanRequest request)
         {
             return request.Amount <= _approvalLimit;
         }
 
-        protected override void HandleLoan(LoanRequest request)
+        protected override void HandleLoan(ILoanRequest request)
         {
             Console.WriteLine($"[Cashier] 💵 Approved loan of {request.Amount} BDT for {request.CustomerName}.");
         }
@@ -109,12 +121,12 @@ namespace BehavioralDesignPattern.ChainOfResponsibility
             _approvalLimit = approvalLimit;
         }
 
-        protected override bool CanHandle(LoanRequest request)
+        protected override bool CanHandle(ILoanRequest request)
         {
             return request.Amount <= _approvalLimit;
         }
 
-        protected override void HandleLoan(LoanRequest request)
+        protected override void HandleLoan(ILoanRequest request)
         {
             Console.WriteLine($"[Manager] 💼 Approved loan of {request.Amount} BDT for {request.CustomerName}.");
         }
@@ -129,35 +141,14 @@ namespace BehavioralDesignPattern.ChainOfResponsibility
             _approvalLimit = approvalLimit;
         }
 
-        protected override bool CanHandle(LoanRequest request)
+        protected override bool CanHandle(ILoanRequest request)
         {
             return request.Amount <= _approvalLimit;
         }
 
-        protected override void HandleLoan(LoanRequest request)
+        protected override void HandleLoan(ILoanRequest request)
         {
             Console.WriteLine($"[Director] 👑 Executive Approval granted for loan of {request.Amount} BDT for {request.CustomerName}.");
-        }
-    }
-
-    // ==========================================
-    // নতুন হ্যান্ডলার: Security / Credit Score Checker 
-    // (প্রমাণ যে আমাদের ডিজাইন এখন 100% Flexible)
-    // ==========================================
-    public class SecurityChecker : BaseLoanApprover
-    {
-        public SecurityChecker() : base("Security Dept") { }
-
-        protected override bool CanHandle(LoanRequest request)
-        {
-            // সে টাকার অ্যামাউন্ট দেখবেই না! 
-            // যদি কাস্টমারের নাম "Hacker" হয়, তবে সে এটা হ্যান্ডেল করবে (মানে রিজেক্ট করে চেইন থামিয়ে দেবে)।
-            return request.CustomerName == "Hacker"; 
-        }
-
-        protected override void HandleLoan(LoanRequest request)
-        {
-            Console.WriteLine($"[Security Dept] 🛑 REJECTED! Customer '{request.CustomerName}' is blacklisted.");
         }
     }
 
@@ -173,39 +164,45 @@ namespace BehavioralDesignPattern.ChainOfResponsibility
 
         static void Run()
         {
-            Console.WriteLine("=== Chain of Responsibility Pattern (100% SOLID & Flexible) ===\n");
+            Console.WriteLine("=== Chain of Responsibility Pattern (Enterprise Level DTO + DIP) ===\n");
 
-            // হ্যান্ডলারগুলো তৈরি
-            ILoanApprover security = new SecurityChecker(); // নতুন ডিপার্টমেন্ট অ্যাড করা হলো!
+            ILoanApprover security = new SecurityChecker(); 
             ILoanApprover cashier = new Cashier(approvalLimit: 150000);   
             ILoanApprover manager = new Manager(approvalLimit: 800000);  
             ILoanApprover director = new Director(approvalLimit: 5000000); 
 
-            // চেইন তৈরি: Security -> Cashier -> Manager -> Director
             security.SetNext(cashier);
             cashier.SetNext(manager);
             manager.SetNext(director);
 
             Console.WriteLine("=== Request 1 ===");
-            LoanRequest req1 = new LoanRequest("Rahim", 50000, "Buy a Laptop");
+            // ক্লায়েন্ট এখন রিকোয়েস্ট তৈরি করে ইন্টারফেসে রাখছে!
+            ILoanRequest req1 = new LoanRequest("Rahim", 50000, "Buy a Laptop");
             security.ProcessLoan(req1);
 
             Console.WriteLine("\n=== Request 2 ===");
-            LoanRequest req2 = new LoanRequest("Karim", 300000, "Buy a Car");
+            ILoanRequest req2 = new LoanRequest("Karim", 300000, "Buy a Car");
             security.ProcessLoan(req2);
 
             Console.WriteLine("\n=== Request 3 ===");
-            LoanRequest req3 = new LoanRequest("Jodu", 1500000, "Start a Business");
+            ILoanRequest req3 = new LoanRequest("Jodu", 1500000, "Start a Business");
             security.ProcessLoan(req3);
+        }
+    }
 
-            Console.WriteLine("\n=== Request 4 (Blacklisted User) ===");
-            // এই রিকোয়েস্টটি Security Checker প্রথমেই আটকে দেবে!
-            LoanRequest req4 = new LoanRequest("Hacker", 10000, "Buy Servers");
-            security.ProcessLoan(req4);
+    // Security Checker
+    public class SecurityChecker : BaseLoanApprover
+    {
+        public SecurityChecker() : base("Security Dept") { }
 
-            Console.WriteLine("\n=== Request 5 (Too High Amount) ===");
-            LoanRequest req5 = new LoanRequest("Salam", 10000000, "Buy a Factory");
-            security.ProcessLoan(req5);
+        protected override bool CanHandle(ILoanRequest request)
+        {
+            return request.CustomerName == "Hacker"; 
+        }
+
+        protected override void HandleLoan(ILoanRequest request)
+        {
+            Console.WriteLine($"[Security Dept] 🛑 REJECTED! Customer '{request.CustomerName}' is blacklisted.");
         }
     }
 }

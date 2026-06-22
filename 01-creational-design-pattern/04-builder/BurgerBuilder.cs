@@ -48,7 +48,6 @@ namespace BuilderPattern.BurgerBuilder.Violation
             Console.WriteLine("=== ❌ VIOLATION RUN: Telescoping Constructor দিয়ে Burger ===");
             
             // Usage - বোঝার উপায় নাই কোনটা cheese, কোনটা bacon! 
-            // true, false, true দেখে কিছুই বোঝা যাচ্ছে না।
             var burger = new Burger("Sesame", "Beef", true, false, true, false, "Mayo", true, "Large");
             burger.Display();
         }
@@ -65,6 +64,10 @@ namespace BuilderPattern.BurgerBuilder.Violation
 
 namespace BuilderPattern.BurgerBuilder.Solution
 {
+    // 🧱 বিল্ডার প্যাটার্নের ৫টি মূল কম্পোনেন্ট:
+
+    // ১. Product: যে জটিল অবজেক্টটি তৈরি করা হচ্ছে (Burger)
+    // ==============================================================
     public class Burger
     {
         public string Bun { get; private set; }
@@ -82,7 +85,13 @@ namespace BuilderPattern.BurgerBuilder.Solution
             Console.WriteLine($"[✅ Builder Burger] {Size} {Patty} on {Bun} | Cheese: {Cheese}, Bacon: {Bacon}, Sauce: {Sauce}");
         }
 
-        // Inner Builder Class
+        // ২. Builder Interface:
+        // ==============================================================
+        // *নোট: Inner Builder Pattern-এ আলাদা কোনো ইন্টারফেস ব্যবহার না করে সরাসরি 
+        // ক্লাসের ভেতরেই Concrete Builder (Inner Class) লেখা হয়।
+
+        // ৩. Concrete Builder: ধাপে ধাপে Burger অবজেক্ট তৈরি করে (Inner class)
+        // ==============================================================
         public class Builder
         {
             private readonly Burger _burger = new Burger();
@@ -105,6 +114,12 @@ namespace BuilderPattern.BurgerBuilder.Solution
         }
     }
 
+    // ৪. Director: 
+    // ==============================================================
+    // *নোট: এই বার্গার উদাহরণে কোনো ডিরেক্টর ব্যবহৃত হয়নি। ক্লায়েন্ট নিজেই কাস্টমাইজেশন ঠিক করে রান করছে।
+
+    // ৫. Builder Client: Inner Builder তৈরি করে চেইনিংয়ের মাধ্যমে কাস্টম Burger তৈরি ও বিল্ড করে
+    // ==============================================================
     public class SolutionRunner
     {
         public static void Run()
@@ -128,7 +143,7 @@ namespace BuilderPattern.BurgerBuilder.Solution
 
 
 // ══════════════════════════════════════════
-// 🚀 Main Entry Point
+// 🚀 Application Client / Main Program: সমগ্র অ্যাপ্লিকেশনের মেইন রানার বা এন্ট্রি পয়েন্ট
 // ══════════════════════════════════════════
 class Program
 {

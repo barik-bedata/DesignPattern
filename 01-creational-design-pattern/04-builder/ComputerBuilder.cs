@@ -9,7 +9,7 @@ using System;
 // ২. পরপর কয়েকটি `bool` বা `int` থাকলে ভুল ভ্যালু পাস হওয়ার সম্ভাবনা অনেক বেশি।
 // ৩. ঐচ্ছিক (Optional) প্যারামিটার থাকলে অনেকগুলো null বা false পাস করতে হয়, যা কোডকে কুৎসিত করে তোলে।
 
-namespace BuilderPattern.Violation
+namespace BuilderPattern.Computer.Violation
 {
     // ১. প্রোডাক্ট ক্লাস (The God Object)
     public class Computer
@@ -59,11 +59,13 @@ namespace BuilderPattern.Violation
 // ✅ SOLUTION: The Good Way (Using Builder Pattern - Fluent API)
 // ==============================================================
 // সমাধান: অবজেক্ট তৈরি করার প্রক্রিয়াটিকে ধাপে ধাপে (step-by-step) ভাগ করা। 
-// এতে কোড পড়া খুব সহজ হয়ে যায় এবং শুধু যেটুকু দরকার সেটুকুই বিল্ড করা যায়।
 
-namespace BuilderPattern.Solution
+namespace BuilderPattern.Computer.Solution
 {
-    // ১. Product (যে জিনিসটা আমরা বানাতে চাই)
+    // 🧱 বিল্ডার প্যাটার্নের ৫টি মূল কম্পোনেন্ট:
+
+    // ১. Product: যে জটিল অবজেক্টটি তৈরি করা হচ্ছে
+    // ==============================================================
     public class Computer
     {
         public string Processor { get; set; }
@@ -78,7 +80,8 @@ namespace BuilderPattern.Solution
         }
     }
 
-    // ২. Builder Interface (পিসি বানানোর ধাপগুলো)
+    // ২. Builder Interface: অবজেক্ট তৈরির বিভিন্ন ধাপের নিয়ম বেঁধে দেয়
+    // ==============================================================
     public interface IComputerBuilder
     {
         IComputerBuilder SetProcessor(string processor);
@@ -89,7 +92,8 @@ namespace BuilderPattern.Solution
         Computer Build(); // শেষে ফাইনাল প্রোডাক্টটি রিটার্ন করবে
     }
 
-    // ৩. Concrete Builder (আসল বিল্ডার যে পিসি বানাচ্ছে)
+    // ৩. Concrete Builder: Builder Interface ইমপ্লিমেন্ট করে পিসি জোড়া লাগায়
+    // ==============================================================
     public class CustomComputerBuilder : IComputerBuilder
     {
         private Computer _computer = new Computer();
@@ -127,11 +131,14 @@ namespace BuilderPattern.Solution
 
         public Computer Build()
         {
-            return _computer;
+            Computer builtComputer = _computer;
+            _computer = new Computer(); // রিসেট
+            return builtComputer;
         }
     }
 
-    // ৪. Director (ঐচ্ছিক/Optional: যদি আগে থেকেই ফিক্সড কিছু কনফিগারেশন দরকার হয়)
+    // ৪. Director: নির্দিষ্ট সিকোয়েন্স বা ধাপে অবজেক্ট বিল্ড করার কাজটি পরিচালনা করে
+    // ==============================================================
     public class ComputerDirector
     {
         // ডিরেক্টর শুধু ইনস্ট্রাকশন দেয়, আসল কাজ বিল্ডারই করে
@@ -147,14 +154,15 @@ namespace BuilderPattern.Solution
         }
     }
 
-    // ৫. ব্যবহার (Client Code)
+    // ৫. Builder Client: Concrete Builder তৈরি করে প্রয়োজন হলে Director-কে দেয় এবং Build করে
+    // ==============================================================
     public class SolutionRunner
     {
         public static void Run()
         {
             Console.WriteLine("\n=== ✅ SOLUTION RUN: Builder Pattern দিয়ে PC বিল্ড ===");
 
-            // পদ্ধতি ১: Custom Build (নিজের মতো করে বানানো)
+            // পদ্ধতি ১: Custom Build (ডিরেক্টর ছাড়া সরাসরি বিল্ডার ক্লায়েন্ট ব্যবহার করে)
             Console.WriteLine("-- Custom Office PC --");
             IComputerBuilder builder = new CustomComputerBuilder();
             var officePc = builder
@@ -175,16 +183,16 @@ namespace BuilderPattern.Solution
 
 
 // ══════════════════════════════════════════
-// 🚀 Main Entry Point (এখান থেকেই প্রোগ্রাম রান হবে)
+// 🚀 Application Client / Main Program (সমগ্র প্রোগ্রামের আল্টিমেট রানার)
 // ══════════════════════════════════════════
 class Program
 {
     static void Main()
     {
         // ভায়োলেশন রান
-        BuilderPattern.Violation.ViolationRunner.Run();
+        BuilderPattern.Computer.Violation.ViolationRunner.Run();
         
         // সলিউশন রান
-        BuilderPattern.Solution.SolutionRunner.Run();
+        BuilderPattern.Computer.Solution.SolutionRunner.Run();
     }
 }

@@ -45,8 +45,9 @@ namespace BuilderPattern.SqlQuery.Violation
 // ==============================================================
 namespace BuilderPattern.SqlQuery.Solution
 {
-    // ==============================================================
-    // ১. Product (যে জিনিসটা আমরা বানাচ্ছি)
+    // 🧱 বিল্ডার প্যাটার্নের ৫টি মূল কম্পোনেন্ট:
+
+    // ১. Product: যে জটিল অবজেক্টটি আমরা তৈরি করতে চাচ্ছি (The complex object being built)
     // ==============================================================
     public class SqlQuery
     {
@@ -79,8 +80,7 @@ namespace BuilderPattern.SqlQuery.Solution
         }
     }
 
-    // ==============================================================
-    // ২. Builder Interface (স্ট্যান্ডার্ড সেট করা)
+    // ২. Builder Interface: অবজেক্ট তৈরির ধাপগুলো নির্ধারণ করে (Construction Steps Contract)
     // ==============================================================
     public interface ISqlQueryBuilder
     {
@@ -92,8 +92,7 @@ namespace BuilderPattern.SqlQuery.Solution
         string Build();
     }
 
-    // ==============================================================
-    // ৩. Concrete Builder (প্রকৃত লজিক এখানে থাকে)
+    // ৩. Concrete Builder: Builder Interface ইমপ্লিমেন্ট করে ধাপে ধাপে প্রোডাক্ট তৈরি করে
     // ==============================================================
     public class SqlQueryBuilder : ISqlQueryBuilder
     {
@@ -140,8 +139,7 @@ namespace BuilderPattern.SqlQuery.Solution
         }
     }
 
-    // ==============================================================
-    // ৪. Client / Director (যে বিল্ডার ব্যবহার করে)
+    // ৪. Director: নির্দিষ্ট সিকোয়েন্স বা ধাপে অবজেক্ট বিল্ড করার কাজটি পরিচালনা করে (যেমন- ReportService)
     // ==============================================================
     public class ReportService
     {
@@ -177,8 +175,7 @@ namespace BuilderPattern.SqlQuery.Solution
         }
     }
 
-    // ==============================================================
-    // ৫. Main Class (SolutionRunner)
+    // ৫. Builder Client: Concrete Builder অবজেক্ট তৈরি করে Director-এর কাছে পাঠায় (বা নিজে সরাসরি কুয়েরি বিল্ড করে)
     // ==============================================================
     public class SolutionRunner
     {
@@ -212,6 +209,7 @@ namespace BuilderPattern.SqlQuery.Solution
     }
 }
 
+// 💻 Application Client / Main Program: সমগ্র অ্যাপ্লিকেশনের রানার বা এন্ট্রি পয়েন্ট
 class Program
 {
     static void Main()

@@ -129,7 +129,9 @@ namespace AbstractFactoryPattern.Violation
 
 namespace AbstractFactoryPattern.Solution
 {
-    // ১. Abstract Products — প্রতিটা "ধরনের" জিনিসের contract
+    // 🧱 অ্যাবস্ট্রাক্ট ফ্যাক্টরির ৫টি মূল কম্পোনেন্ট:
+
+    // ১. Abstract Product: প্রতিটা "ধরনের" জিনিসের contract (যেমন- IPayment, IReceipt, INotification)
     public interface IPayment 
     { 
         void Process(decimal amount); 
@@ -145,7 +147,7 @@ namespace AbstractFactoryPattern.Solution
         void Send(string message); 
     }
 
-    // ২. Concrete Products — Nagad পরিবার
+    // ২. Concrete Product: আসল প্রোডাক্ট ক্লাসগুলো (Nagad পরিবার)
     public class NagadPayment : IPayment 
     { 
         public void Process(decimal amount) 
@@ -170,7 +172,7 @@ namespace AbstractFactoryPattern.Solution
         }
     }
 
-    // ৩. Concrete Products — bKash পরিবার
+    // (Concrete Product-এর অংশ) আসল প্রোডাক্ট ক্লাসগুলো (bKash পরিবার)
     public class bKashPayment : IPayment 
     { 
         public void Process(decimal amount) 
@@ -195,7 +197,7 @@ namespace AbstractFactoryPattern.Solution
         }
     }
 
-    // ৪. Abstract Factory — "পুরো পরিবার বানানোর চুক্তি"
+    // ৩. Abstract Factory: "পুরো পরিবার বানানোর চুক্তি" (Factory Interface containing creation methods)
     public interface IPaymentFactory
     {
         IPayment CreatePayment();
@@ -203,7 +205,7 @@ namespace AbstractFactoryPattern.Solution
         INotification CreateNotification();
     }
 
-    // ৫. Concrete Factories — প্রতিটা নিজের পরিবার বানায়
+    // ৪. Concrete Factory: প্রতিটা নিজের পরিবার বানায় (আসল ফ্যাক্টরি ক্লাসগুলো)
     public class NagadFactory : IPaymentFactory
     {
         public IPayment CreatePayment() 
@@ -240,7 +242,8 @@ namespace AbstractFactoryPattern.Solution
         }
     }
 
-    // ৬. Client — factory কে চেনে, কিন্তু কোন brand সেটা জানে না এবং জানতে চায় না
+    // ৫. Client: factory কে চেনে, কিন্তু কোন brand সেটা জানে না এবং জানতে চায় না (প্যাটার্নের ভাষায় Client)
+    // Abstract Factory-এর Client
     public class CheckoutService
     {
         private readonly IPayment _payment;
@@ -263,7 +266,8 @@ namespace AbstractFactoryPattern.Solution
         }
     }
 
-    // ৭. এই ক্লাসটি রান করে সলিউশনটি দেখাবে
+    // 💻 Application Client: সলিউশন রান করার ক্লাস (পুরো অ্যাপ্লিকেশনের আল্টিমেট ক্লায়েন্ট)
+    // Puro program er client
     public class SolutionRunner
     {
         public static void Run()

@@ -76,14 +76,16 @@ namespace FactoryMethodViolation
 // ==============================================================
 // ✅ SOLUTION: The Good Way (Using Factory Method)
 // ==============================================================
-// ১. Contract — সব payment-ই এটা মানবে
+// 🧱 ফ্যাক্টরি মেথডের ৪টি মূল কম্পোনেন্ট:
+
+// ১. Product: সব payment-ই এটা মানবে (Common Interface)
 public interface IPayment
 {
     void ProcessPayment(decimal amount);
     void Refund(decimal amount);
 }
 
-// ২. Concrete Products — প্রতিটা gateway নিজের কাজ নিজে করে
+// ২. Concrete Products: প্রতিটা gateway নিজের কাজ নিজে করে (আসল প্রোডাক্ট ক্লাসগুলো)
 public class NagadPayment : IPayment
 {
     public void ProcessPayment(decimal amount) =>
@@ -102,7 +104,7 @@ public class bKashPayment : IPayment
         Console.WriteLine($"↩️ বিকাশ: {amount} টাকা ফেরত দেওয়া হলো");
 }
 
-// ৩. Rocket যোগ করতে শুধু নতুন ক্লাস — আর কিছু ছুঁতে হবে না!
+// (Concrete Product-এর অংশ) Rocket যোগ করতে শুধু নতুন ক্লাস — আর কিছু ছুঁতে হবে না!
 public class RocketPayment : IPayment
 {
     public void ProcessPayment(decimal amount) =>
@@ -112,7 +114,7 @@ public class RocketPayment : IPayment
         Console.WriteLine($"↩️ রকেট: {amount} টাকা ফেরত দেওয়া হলো");
 }
 
-// ৪. Abstract Creator — এটাই Factory Method Pattern-এর হৃদয়
+// ৩. Creator: এটাই Factory Method Pattern-এর হৃদয় (Abstract Creator class containing Factory Method)
 public abstract class PaymentProcessor
 {
     // এটাই Factory Method — subclass ঠিক করবে কোনটা বানাবে
@@ -128,7 +130,7 @@ public abstract class PaymentProcessor
     }
 }
 
-// ৫. Concrete Creators
+// ৪. Concrete Creators: নির্দিষ্ট প্রোডাক্ট তৈরি করার আসল ফ্যাক্টরি ক্লাসগুলো
 public class NagadProcessor : PaymentProcessor
 {
     protected override IPayment CreatePayment() => new NagadPayment();
@@ -144,7 +146,7 @@ public class RocketProcessor : PaymentProcessor
     protected override IPayment CreatePayment() => new RocketPayment();
 }
 
-// ৬. ব্যবহার
+// 💻 Application Client: মেইন মেথড (পুরো অ্যাপ্লিকেশনের আল্টিমেট ক্লায়েন্ট কোড বা Driver Code)
 class Program
 {
     static void Main()
